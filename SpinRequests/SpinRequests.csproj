@@ -1,0 +1,83 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net472</TargetFramework>
+        <AssemblyName>SpinRequests</AssemblyName>
+        <Product>SpinRequests</Product>
+        <Version>0.0.0</Version>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <LangVersion>latest</LangVersion>
+        <RestoreAdditionalProjectSources>
+            https://api.nuget.org/v3/index.json;
+            https://nuget.bepinex.dev/v3/index.json;
+            https://nuget.samboy.dev/v3/index.json
+        </RestoreAdditionalProjectSources>
+        <RootNamespace>SpinRequests</RootNamespace>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+        <DebugType>full</DebugType>
+        <DebugSymbols>true</DebugSymbols>
+        <Optimize>false</Optimize>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <DebugType>none</DebugType>
+        <DebugSymbols>false</DebugSymbols>
+        <Optimize>true</Optimize>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\Spin Rhythm')">
+        <BaseGameDir>C:\Program Files (x86)\Steam\steamapps\common\Spin Rhythm</BaseGameDir>
+    </PropertyGroup>
+    <PropertyGroup Condition="Exists('D:\Steam\steamapps\common\Spin Rhythm')">
+        <BaseGameDir>D:\Steam\steamapps\common\Spin Rhythm</BaseGameDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all"/>
+        <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.5.0-beta.1">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="BepInEx.Core" Version="5.*"/>
+        <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*"/>
+        <PackageReference Include="UnityEngine.Modules" Version="6000.0.37" IncludeAssets="compile"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Reference Include="Assembly-CSharp">
+            <HintPath>$(BaseGameDir)\SpinRhythm_Data\Managed\Assembly-CSharp.dll</HintPath>
+            <Publicize>true</Publicize>
+        </Reference>
+        <Reference Include="Newtonsoft.Json">
+          <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Spin Rhythm\BepInEx\plugins\Newtonsoft.Json.dll</HintPath>
+        </Reference>
+        <Reference Include="SSD.Game">
+            <HintPath>$(BaseGameDir)\SpinRhythm_Data\Managed\SSD.Game.dll</HintPath>
+        </Reference>
+        <Reference Include="SpinCore">
+            <HintPath>$(BaseGameDir)\BepInEx\plugins\SpinCore.dll</HintPath>
+        </Reference>
+        <Reference Include="Unity.TextMeshPro">
+            <HintPath>$(BaseGameDir)\SpinRhythm_Data\Managed\Unity.TextMeshPro.dll</HintPath>
+        </Reference>
+        <Reference Include="Unity.XR.CoreUtils">
+            <HintPath>$(BaseGameDir)\SpinRhythm_Data\Managed\Unity.XR.CoreUtils.dll</HintPath>
+        </Reference>
+        <Reference Include="Unity.XR.Interaction.Toolkit">
+            <HintPath>$(BaseGameDir)\SpinRhythm_Data\Managed\Unity.XR.Interaction.Toolkit.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UI">
+            <HintPath>$(BaseGameDir)\SpinRhythm_Data\Managed\UnityEngine.UI.dll</HintPath>
+        </Reference>
+        <Reference Include="SpinShareLib">
+            <HintPath>$(BaseGameDir)\BepInEx\plugins\SpinShareLib.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all"/>
+    </ItemGroup>
+</Project>
