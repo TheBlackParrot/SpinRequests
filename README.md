@@ -47,6 +47,7 @@ As this is really only a web server, you can test any of these endpoints in any 
   "ExpertRating": <integer (nullable)>,
   "XDRating": <integer (nullable)>,
   "AlreadyDownloaded": <boolean>,
-  "FileReference": <string (nullable)> (filename of the map data)
+  "FileReference": <string (nullable)> (filename of the map data),
+  "UploadTime": <integer (nullable)>,
 }
 ```
