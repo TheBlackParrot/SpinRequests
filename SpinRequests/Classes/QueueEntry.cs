@@ -70,20 +70,32 @@ public class QueueEntry
         
         CustomGroup entryGroup = UIHelper.CreateGroup(QueueList.QueueListContainer, "QueueEntry");
         
-        CustomTextComponent entryTitle = UIHelper.CreateLabel(entryGroup, "QueueEntryTitle", TranslationReference.Empty);
+        #region metadata
+        CustomGroup metadataGroup = UIHelper.CreateGroup(entryGroup, "QueueEntryMetadata");
+        
+        CustomTextComponent entryTitle = UIHelper.CreateLabel(metadataGroup, "QueueEntryTitle", TranslationReference.Empty);
+        CustomTextMeshProUGUI entryTitleTextComponent = entryTitle.Transform.GetComponent<CustomTextMeshProUGUI>();
+        entryTitleTextComponent.textWrappingMode = TextWrappingModes.NoWrap;
+        entryTitleTextComponent.overflowMode = TextOverflowModes.Ellipsis;
         entryTitle.ExtraText = TitleFormatted;
         
-        CustomTextComponent entryArtist = UIHelper.CreateLabel(entryGroup, "QueueEntryArtist", TranslationReference.Empty);
+        CustomTextComponent entryArtist = UIHelper.CreateLabel(metadataGroup, "QueueEntryArtist", TranslationReference.Empty);
         CustomTextMeshProUGUI entryArtistTextComponent = entryArtist.Transform.GetComponent<CustomTextMeshProUGUI>();
+        entryArtistTextComponent.textWrappingMode = TextWrappingModes.NoWrap;
+        entryArtistTextComponent.overflowMode = TextOverflowModes.Ellipsis;
         entryArtistTextComponent.fontSize = 24;
         entryArtistTextComponent.fontStyle = FontStyles.Italic;
         entryArtist.ExtraText = $"<alpha=#AA>by <alpha=#FF>{Artist}";
         
-        CustomTextComponent entryMapper = UIHelper.CreateLabel(entryGroup, "QueueEntryMapper", TranslationReference.Empty);
+        CustomTextComponent entryMapper = UIHelper.CreateLabel(metadataGroup, "QueueEntryMapper", TranslationReference.Empty);
         CustomTextMeshProUGUI entryMapperTextComponent = entryMapper.Transform.GetComponent<CustomTextMeshProUGUI>();
+        entryMapperTextComponent.textWrappingMode = TextWrappingModes.NoWrap;
+        entryMapperTextComponent.overflowMode = TextOverflowModes.Ellipsis;
         entryMapperTextComponent.fontSize = 24;
         entryMapper.ExtraText = $"<alpha=#AA>charted by <alpha=#FF>{Mapper}";
+        #endregion
         
+        #region buttons
         CustomGroup buttonGroup = UIHelper.CreateGroup(entryGroup, "QueueEntryButtons", Axis.Horizontal);
         
         // lambda moment smh
@@ -161,5 +173,6 @@ public class QueueEntry
             Plugin.Log.LogDebug($"SKIP -- {Title} ({SpinShareKey})");
             Object.DestroyImmediate(entryGroup.GameObject);
         });
+        #endregion
     }
 }
