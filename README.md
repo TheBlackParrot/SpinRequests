@@ -5,6 +5,8 @@ Very barebones for now, but I'll expand it out some over time.
 
 Any streaming bot you use (e.g. Streamer.bot, Firebot, MixItUp, etc.) now has request queue functionality -- so long as it supports making HTTP requests (at the minimum).
 
+The request queue lives in the panel on the left side of the map select menu.
+
 ## Dependencies
 - SpinCore
 - SpinShareLib
