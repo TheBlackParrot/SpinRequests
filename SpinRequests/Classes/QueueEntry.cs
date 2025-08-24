@@ -34,6 +34,7 @@ public class QueueEntry
     public int? XDRating { get; set; }
     public bool AlreadyDownloaded => FileReference == null || File.Exists(Path.Combine(Plugin.CustomsPath, $"{FileReference}.srtb"));
     public string? FileReference { get; set; } = string.Empty;
+    public long UploadDate { get; set; }
     // ReSharper restore UnusedAutoPropertyAccessor.Global
     // ReSharper restore MemberCanBePrivate.Global
     
@@ -51,6 +52,11 @@ public class QueueEntry
         HardRating = details.hardDifficulty;
         ExpertRating = details.expertDifficulty;
         XDRating = details.XDDifficulty;
+        
+        // details.uploadDate.stimezone is null (erm), but SpinShare stores time in Europe/Berlin
+        // https://github.com/unicode-org/cldr/blob/59dfe3ad9720e304957658bd991df8b0dba3519a/common/supplemental/windowsZones.xml#L307
+        DateTime localTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(details.uploadDate.date, "W. Europe Standard Time", TimeZoneInfo.Local.Id);
+        UploadDate = DateTimeOffset.FromFileTime(localTime.ToFileTime()).ToUnixTimeSeconds();
 
         if (query == null)
         {
