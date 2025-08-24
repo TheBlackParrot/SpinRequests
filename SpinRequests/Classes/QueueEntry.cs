@@ -99,7 +99,7 @@ public class QueueEntry
         // web requests to file:// are just easier and i'm all about easy
         UnityWebRequest request = UnityWebRequestTexture.GetTexture(AlreadyDownloaded
             ? $"file://{Plugin.CustomsPath}/AlbumArt/{FileReference}.png"
-            : $"https://spinsha.re/uploads/cover/{FileReference}.png");
+            : $"https://spinsha.re/uploads/thumbnail/{FileReference}.jpg");
         UnityWebRequestAsyncOperation response = request.SendWebRequest();
 
         response.completed += async _ =>
