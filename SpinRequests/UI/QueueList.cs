@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using SpinCore.UI;
 using SpinRequests.Classes;
@@ -8,24 +9,28 @@ namespace SpinRequests.UI;
 
 internal static class QueueList
 {
-    internal static CustomSidePanel QueueListPanel = null!;
+    internal static CustomSidePanel? QueueListPanel;
     internal static CustomGroup? QueueListContainer;
     
     internal static readonly List<QueueEntry> BufferedList = [];
 
     internal static void CreateQueueListPanel()
     {
-        // figure out the sprite later i cba
-        // this will *work* i just need the game to Load
-        //Sprite? trackListIcon = GameObject.Find("TrackListButton").transform.Find("IconContainer/Icon").GetComponent<Image>().sprite;
-        
-        QueueListPanel = UIHelper.CreateSidePanel(nameof(QueueListPanel), "SpinRequests_RequestQueueText");
-        QueueListPanel.OnSidePanelLoaded += QueueListPanelOnSidePanelLoaded;
+        // this has to be in a Task.Run instead of just making this an async Task. do i know why? Nope
+        Task.Run(async () =>
+        {
+            await Awaitable.MainThreadAsync();
+
+            Sprite? sprite = Resources.FindObjectsOfTypeAll<Sprite>().First(x => x.name == "Playlist");
+            
+            QueueListPanel = UIHelper.CreateSidePanel(nameof(QueueListPanel), "SpinRequests_RequestQueueText", sprite);
+            QueueListPanel.OnSidePanelLoaded += QueueListPanelOnSidePanelLoaded;
+        });
     }
 
     private static void QueueListPanelOnSidePanelLoaded(Transform panelTransform)
     {
-        QueueListPanel.OnSidePanelLoaded -= QueueListPanelOnSidePanelLoaded;
+        QueueListPanel!.OnSidePanelLoaded -= QueueListPanelOnSidePanelLoaded;
         QueueListContainer = UIHelper.CreateGroup(panelTransform, "QueueListContainer");
 
         _ = LoadBufferedQueue();

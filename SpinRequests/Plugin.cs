@@ -1,8 +1,5 @@
-﻿using System;
-using System.IO;
-using BepInEx;
+﻿using BepInEx;
 using BepInEx.Logging;
-using HarmonyLib;
 using SpinCore.Translation;
 using SpinRequests.Services;
 using SpinRequests.UI;
@@ -42,9 +39,5 @@ public partial class Plugin : BaseUnityPlugin
     private void OnEnable()
     {
         QueueList.CreateQueueListPanel();
-    }
-
-    private void OnDisable()
-    {
     }
 }
