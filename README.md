@@ -41,6 +41,12 @@ As this is really only a web server, you can test any of these endpoints in any 
   "SpinShareKey": <integer>,
   "Requester": <string>,
   "Service": <string>,
-  "AlreadyDownloaded": <boolean>
+  "EasyRating": <integer (nullable)>,
+  "NormalRating": <integer (nullable)>,
+  "HardRating": <integer (nullable)>,
+  "ExpertRating": <integer (nullable)>,
+  "XDRating": <integer (nullable)>,
+  "AlreadyDownloaded": <boolean>,
+  "FileReference": <string (nullable)> (filename of the map data)
 }
 ```

@@ -9,20 +9,33 @@ using SpinRequests.UI;
 using SpinShareLib.Types;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Networking;
+using UnityEngine.UI;
 using Object = UnityEngine.Object;
 
 namespace SpinRequests.Classes;
 
 public class QueueEntry
 {
+    // ReSharper disable MemberCanBePrivate.Global
+    // ReSharper disable UnusedAutoPropertyAccessor.Global
     public string Title { get; set; } = string.Empty;
     [JsonIgnore] private string TitleFormatted { get; set; } = string.Empty;
     public string Artist { get; set; } = string.Empty;
     public string Mapper { get; set; } = string.Empty;
-    public int? SpinShareKey { get; set; } = null;
+    public int? SpinShareKey { get; set; }
     public string Requester { get; set; } = string.Empty;
     public string Service { get; set; } = string.Empty;
-    [JsonIgnore] private string? FileReference { get; set; } = string.Empty;
+    public int? EasyRating { get; set; }
+    public int? NormalRating { get; set; }
+    public int? HardRating { get; set; }
+    public int? ExpertRating { get; set; }
+    // ReSharper disable once InconsistentNaming
+    public int? XDRating { get; set; }
+    public bool AlreadyDownloaded => FileReference == null || File.Exists(Path.Combine(Plugin.CustomsPath, $"{FileReference}.srtb"));
+    public string? FileReference { get; set; } = string.Empty;
+    // ReSharper restore UnusedAutoPropertyAccessor.Global
+    // ReSharper restore MemberCanBePrivate.Global
     
     public QueueEntry(SongDetail details, Dictionary<string, string>? query = null)
     {
@@ -32,6 +45,12 @@ public class QueueEntry
         Mapper = details.charter;
         SpinShareKey = details.id;
         FileReference = details.fileReference;
+        
+        EasyRating = details.easyDifficulty;
+        NormalRating = details.normalDifficulty;
+        HardRating = details.hardDifficulty;
+        ExpertRating = details.expertDifficulty;
+        XDRating = details.XDDifficulty;
 
         if (query == null)
         {
@@ -48,8 +67,6 @@ public class QueueEntry
         }
     }
     public QueueEntry() { }
-
-    private bool AlreadyDownloaded => FileReference == null || File.Exists(Path.Combine(Plugin.CustomsPath, $"{FileReference}.srtb"));
 
     public async Task AddToQueue(bool silent = false)
     {
@@ -70,16 +87,46 @@ public class QueueEntry
         
         CustomGroup entryGroup = UIHelper.CreateGroup(QueueList.QueueListContainer, "QueueEntry");
         
+        CustomGroup displayGroup = UIHelper.CreateGroup(entryGroup, "QueueEntryDisplay", Axis.Horizontal);
+        
+        #region art
+        // web requests to file:// are just easier and i'm all about easy
+        UnityWebRequest request = UnityWebRequestTexture.GetTexture(AlreadyDownloaded
+            ? $"file://{Plugin.CustomsPath}/AlbumArt/{FileReference}.png"
+            : $"https://spinsha.re/uploads/cover/{FileReference}.png");
+        UnityWebRequestAsyncOperation response = request.SendWebRequest();
+
+        response.completed += async _ =>
+        {
+            await Awaitable.MainThreadAsync();
+            
+            Texture2D texture = DownloadHandlerTexture.GetContent(request);
+            CustomImage artImage = UIHelper.CreateImage(displayGroup, "QueueEntryArt", texture);
+            artImage.Transform.SetSiblingIndex(0);
+            
+            artImage.Transform.GetChild(0).GetComponent<RectTransform>().sizeDelta = new Vector2(110, 110);
+
+            artImage.Transform.GetComponent<LayoutElement>().preferredHeight = 100;
+            artImage.Transform.GetComponent<RectTransform>().sizeDelta = new Vector2(100, 100);
+        };
+        #endregion
+
         #region metadata
-        CustomGroup metadataGroup = UIHelper.CreateGroup(entryGroup, "QueueEntryMetadata");
+        CustomGroup metadataGroup = UIHelper.CreateGroup(displayGroup, "QueueEntryMetadata");
+        VerticalLayoutGroup metadataLayoutGroupComponent = metadataGroup.Transform.GetComponent<VerticalLayoutGroup>();
+        metadataLayoutGroupComponent.spacing = 0;
         
         CustomTextComponent entryTitle = UIHelper.CreateLabel(metadataGroup, "QueueEntryTitle", TranslationReference.Empty);
+        LayoutElement entryTitleLayoutComponent = entryTitle.Transform.GetComponent<LayoutElement>();
+        entryTitleLayoutComponent.preferredWidth = 300;
         CustomTextMeshProUGUI entryTitleTextComponent = entryTitle.Transform.GetComponent<CustomTextMeshProUGUI>();
         entryTitleTextComponent.textWrappingMode = TextWrappingModes.NoWrap;
         entryTitleTextComponent.overflowMode = TextOverflowModes.Ellipsis;
         entryTitle.ExtraText = TitleFormatted;
         
         CustomTextComponent entryArtist = UIHelper.CreateLabel(metadataGroup, "QueueEntryArtist", TranslationReference.Empty);
+        LayoutElement entryArtistLayoutComponent = entryArtist.Transform.GetComponent<LayoutElement>();
+        entryArtistLayoutComponent.preferredWidth = 300;
         CustomTextMeshProUGUI entryArtistTextComponent = entryArtist.Transform.GetComponent<CustomTextMeshProUGUI>();
         entryArtistTextComponent.textWrappingMode = TextWrappingModes.NoWrap;
         entryArtistTextComponent.overflowMode = TextOverflowModes.Ellipsis;
@@ -88,6 +135,8 @@ public class QueueEntry
         entryArtist.ExtraText = $"<alpha=#AA>by <alpha=#FF>{Artist}";
         
         CustomTextComponent entryMapper = UIHelper.CreateLabel(metadataGroup, "QueueEntryMapper", TranslationReference.Empty);
+        LayoutElement entryMapperLayoutComponent = entryMapper.Transform.GetComponent<LayoutElement>();
+        entryMapperLayoutComponent.preferredWidth = 300;
         CustomTextMeshProUGUI entryMapperTextComponent = entryMapper.Transform.GetComponent<CustomTextMeshProUGUI>();
         entryMapperTextComponent.textWrappingMode = TextWrappingModes.NoWrap;
         entryMapperTextComponent.overflowMode = TextOverflowModes.Ellipsis;
