@@ -88,6 +88,7 @@ public class QueueEntry
         if (QueueList.QueueListContainer == null)
         {
             QueueList.BufferedList.Add(this);
+            QueueList.CheckIndicatorDot();
             return;
         }
         
@@ -217,6 +218,7 @@ public class QueueEntry
                 
                 XDSelectionListMenu.Instance.ScrollToTrack(metadataHandle);
                 QueueList.Entries.Remove(this);
+                QueueList.CheckIndicatorDot();
                 Object.DestroyImmediate(entryGroup.GameObject);
             }
             catch (Exception e)
@@ -228,10 +230,12 @@ public class QueueEntry
         {
             Plugin.Log.LogDebug($"SKIP -- {Title} ({SpinShareKey})");
             QueueList.Entries.Remove(this);
+            QueueList.CheckIndicatorDot();
             Object.DestroyImmediate(entryGroup.GameObject);
         });
         #endregion
         
         QueueList.Entries.Add(this);
+        QueueList.CheckIndicatorDot();
     }
 }

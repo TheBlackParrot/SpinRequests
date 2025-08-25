@@ -26,6 +26,8 @@ internal static class QueueList
             
             QueueListPanel = UIHelper.CreateSidePanel(nameof(QueueListPanel), "SpinRequests_RequestQueueText", sprite);
             QueueListPanel.OnSidePanelLoaded += QueueListPanelOnSidePanelLoaded;
+            
+            CheckIndicatorDot();
         });
     }
 
@@ -33,6 +35,8 @@ internal static class QueueList
     {
         QueueListPanel!.OnSidePanelLoaded -= QueueListPanelOnSidePanelLoaded;
         QueueListContainer = UIHelper.CreateGroup(panelTransform, "QueueListContainer");
+        
+        CheckIndicatorDot();
 
         _ = LoadBufferedQueue();
     }
@@ -47,5 +51,17 @@ internal static class QueueList
         }
         
         BufferedList.Clear();
+    }
+
+    internal static void CheckIndicatorDot()
+    {
+        GameObject? button = GameObject.Find("Dot Selector Button QueueListPanel");
+        if (button == null)
+        {
+            return;
+        }
+        
+        Transform? indicatorDotTransform = button.transform.Find("IconContainer/IndicatorDot");
+        indicatorDotTransform?.gameObject.SetActive(Entries.Concat(BufferedList).Any());
     }
 }
