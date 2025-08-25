@@ -51,8 +51,14 @@ As this is really only a web server, you can test any of these endpoints in any 
   "HardRating": <integer (nullable)>,
   "ExpertRating": <integer (nullable)>,
   "XDRating": <integer (nullable)>,
+  "RemiXDRating": <integer (nullable)>,
+  "ActiveDifficulty": <string (nullable)>,
   "AlreadyDownloaded": <boolean>,
   "FileReference": <string (nullable)> (filename of the map data),
-  "UploadTime": <integer (nullable)>,
+  "UploadTime": <integer (nullable)>
 }
 ```
+> [!NOTE]
+> SpinShare does not respond with any data pertaining to the RemiXD difficulty (if present), this can only be generated using data from in-game.
+> 
+> *For the time being, this can only be set from the `/history` endpoint, otherwise it will always be null.*
