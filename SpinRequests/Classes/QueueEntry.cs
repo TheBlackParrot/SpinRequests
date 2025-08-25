@@ -30,8 +30,12 @@ public class QueueEntry
     public int? NormalRating { get; set; }
     public int? HardRating { get; set; }
     public int? ExpertRating { get; set; }
-    // ReSharper disable once InconsistentNaming
+    // ReSharper disable InconsistentNaming
     public int? XDRating { get; set; }
+    // SpinShare does not support listing RemiXD ratings, so this will always be null unless it's being generated with in-game data
+    public int? RemiXDRating { get; set; }
+    // ReSharper restore InconsistentNaming
+    public string? ActiveDifficulty { get; set; }
     public bool AlreadyDownloaded => FileReference == null || File.Exists(Path.Combine(Plugin.CustomsPath, $"{FileReference}.srtb"));
     public string? FileReference { get; set; } = string.Empty;
     public long? UploadTime { get; set; }
@@ -71,6 +75,33 @@ public class QueueEntry
         { 
             Service = service;
         }
+    }
+    public QueueEntry(PlayableTrackData trackData)
+    {
+        TrackInfoMetadata metadata = trackData.Setup.TrackDataSegmentForSingleTrackDataSetup.metadata.TrackInfoMetadata;
+        MetadataHandle metadataHandle = trackData.Setup.TrackDataSegmentForSingleTrackDataSetup.metadata;
+        
+        Title = metadata.title;
+        Artist = metadata.artistName;
+        Mapper = metadata.charter;
+        
+        string? reference = metadataHandle.UniqueName;
+        if (!string.IsNullOrEmpty(reference))
+        {
+            if (reference.LastIndexOf('_') != -1)
+            {
+                reference = reference.Remove(metadataHandle.UniqueName.LastIndexOf('_')).Replace("CUSTOM_", string.Empty);
+            }
+        }
+        FileReference = reference;
+        
+        ActiveDifficulty = trackData.Difficulty.ToString();
+        EasyRating = trackData.Difficulty == TrackData.DifficultyType.Easy ? trackData.DifficultyRating : null;
+        NormalRating = trackData.Difficulty == TrackData.DifficultyType.Normal ? trackData.DifficultyRating : null;
+        HardRating = trackData.Difficulty == TrackData.DifficultyType.Hard ? trackData.DifficultyRating : null;
+        ExpertRating = trackData.Difficulty == TrackData.DifficultyType.Expert ? trackData.DifficultyRating : null;
+        XDRating = trackData.Difficulty == TrackData.DifficultyType.XD ? trackData.DifficultyRating : null;
+        RemiXDRating = trackData.Difficulty == TrackData.DifficultyType.RemiXD ? trackData.DifficultyRating : null;
     }
     public QueueEntry() { }
 

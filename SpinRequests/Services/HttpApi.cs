@@ -139,7 +139,23 @@ internal class HttpApi
             : JsonConvert.SerializeObject(QueueList.Entries.Concat(QueueList.BufferedList).Where(x => x.Requester == requester)));
 
         return new KeyValuePair<int, byte[]>(200, response);
-    } 
+    }
+    
+    private static byte[] GetSessionHistory(Dictionary<string, string>? query = null)
+    {
+        int limit = 0;
+        if (query != null)
+        {
+            if (query.TryGetValue("limit", out string? limitStr))
+            {
+                int.TryParse(limitStr, out limit);
+            }
+        }
+        
+        List<QueueEntry> output = Plugin.PlayedMapHistory.GetRange(0, limit > 0 ? limit : Plugin.PlayedMapHistory.Count);
+        
+        return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(output));
+    }
 
     private static async Task HandleContext(HttpListenerContext context)
     {
@@ -167,6 +183,10 @@ internal class HttpApi
                 
                 case "add":
                     response = await HandleQueryAddContext(path, true, urlQuery);
+                    break;
+                
+                case "history":
+                    response = new KeyValuePair<int, byte[]>(200, GetSessionHistory(urlQuery));
                     break;
                 
                 case "query":

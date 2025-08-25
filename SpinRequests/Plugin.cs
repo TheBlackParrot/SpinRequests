@@ -1,6 +1,9 @@
-﻿using BepInEx;
+﻿using System.Collections.Generic;
+using System.Linq;
+using BepInEx;
 using BepInEx.Logging;
 using SpinCore.Translation;
+using SpinRequests.Classes;
 using SpinRequests.Services;
 using SpinRequests.UI;
 using SpinShareLib;
@@ -39,5 +42,17 @@ public partial class Plugin : BaseUnityPlugin
     private void OnEnable()
     {
         QueueList.CreateQueueListPanel();
+        Track.OnStartedPlayingTrack += TrackOnStartedPlayingTrack;
+    }
+
+    private void OnDisable()
+    {
+        Track.OnStartedPlayingTrack -= TrackOnStartedPlayingTrack;
+    }
+
+    internal static List<QueueEntry> PlayedMapHistory = [];
+    private static void TrackOnStartedPlayingTrack(PlayableTrackDataHandle dataHandle, PlayState[] _)
+    {
+        PlayedMapHistory = PlayedMapHistory.Prepend(new QueueEntry(dataHandle.Data)).ToList();
     }
 }
