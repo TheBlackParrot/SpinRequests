@@ -13,6 +13,7 @@ internal static class QueueList
     internal static CustomGroup? QueueListContainer;
     
     internal static readonly List<QueueEntry> BufferedList = [];
+    internal static readonly List<QueueEntry> Entries = [];
 
     internal static void CreateQueueListPanel()
     {

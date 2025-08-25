@@ -216,6 +216,7 @@ public class QueueEntry
 #endif
                 
                 XDSelectionListMenu.Instance.ScrollToTrack(metadataHandle);
+                QueueList.Entries.Remove(this);
                 Object.DestroyImmediate(entryGroup.GameObject);
             }
             catch (Exception e)
@@ -226,8 +227,11 @@ public class QueueEntry
         UIHelper.CreateButton(buttonGroup, "SkipButton", "SpinRequests_SkipButtonText", () =>
         {
             Plugin.Log.LogDebug($"SKIP -- {Title} ({SpinShareKey})");
+            QueueList.Entries.Remove(this);
             Object.DestroyImmediate(entryGroup.GameObject);
         });
         #endregion
+        
+        QueueList.Entries.Add(this);
     }
 }

@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using BepInEx.Logging;
 using Newtonsoft.Json;
 using SpinRequests.Classes;
+using SpinRequests.UI;
 using SpinShareLib.Types;
 
 namespace SpinRequests.Services;
@@ -122,6 +123,24 @@ internal class HttpApi
             return new KeyValuePair<int, byte[]>(code, response);
     }
 
+    private static KeyValuePair<int, byte[]> HandleQueueContext(Dictionary<string, string>? query = null)
+    {
+        string? requester = null;
+        if (query != null)
+        {
+            if (query.TryGetValue("user", out string? user))
+            {
+                requester = user;
+            }   
+        }
+
+        byte[] response = Encoding.UTF8.GetBytes(string.IsNullOrEmpty(requester)
+            ? JsonConvert.SerializeObject(QueueList.Entries.Concat(QueueList.BufferedList))
+            : JsonConvert.SerializeObject(QueueList.Entries.Concat(QueueList.BufferedList).Where(x => x.Requester == requester)));
+
+        return new KeyValuePair<int, byte[]>(200, response);
+    } 
+
     private static async Task HandleContext(HttpListenerContext context)
     {
         string[] path = context.Request.Url.Segments;
@@ -146,12 +165,16 @@ internal class HttpApi
                     context.Response.Close();
                     return;
                 
+                case "add":
+                    response = await HandleQueryAddContext(path, true, urlQuery);
+                    break;
+                
                 case "query":
                     response = await HandleQueryAddContext(path);
                     break;
                 
-                case "add":
-                    response = await HandleQueryAddContext(path, true, urlQuery);
+                case "queue":
+                    response = HandleQueueContext(urlQuery);
                     break;
                 
                 default:
