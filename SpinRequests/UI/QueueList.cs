@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using SpinCore.UI;
 using SpinRequests.Classes;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace SpinRequests.UI;
 

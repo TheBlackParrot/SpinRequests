@@ -128,8 +128,10 @@ public class QueueEntry
         }
         
         CustomGroup entryGroup = UIHelper.CreateGroup(QueueList.QueueListContainer, "QueueEntry");
+        entryGroup.Transform.GetComponent<VerticalLayoutGroup>().padding = new RectOffset(0, 0, 10, 10);
         
         CustomGroup displayGroup = UIHelper.CreateGroup(entryGroup, "QueueEntryDisplay", Axis.Horizontal);
+        displayGroup.Transform.GetComponent<HorizontalLayoutGroup>().spacing = 10f;
         
         #region art
         // web requests to file:// are just easier and i'm all about easy
@@ -160,7 +162,7 @@ public class QueueEntry
         
         CustomTextComponent entryTitle = UIHelper.CreateLabel(metadataGroup, "QueueEntryTitle", TranslationReference.Empty);
         LayoutElement entryTitleLayoutComponent = entryTitle.Transform.GetComponent<LayoutElement>();
-        entryTitleLayoutComponent.preferredWidth = 300;
+        entryTitleLayoutComponent.preferredWidth = 350;
         CustomTextMeshProUGUI entryTitleTextComponent = entryTitle.Transform.GetComponent<CustomTextMeshProUGUI>();
         entryTitleTextComponent.textWrappingMode = TextWrappingModes.NoWrap;
         entryTitleTextComponent.overflowMode = TextOverflowModes.Ellipsis;
@@ -168,7 +170,7 @@ public class QueueEntry
         
         CustomTextComponent entryArtist = UIHelper.CreateLabel(metadataGroup, "QueueEntryArtist", TranslationReference.Empty);
         LayoutElement entryArtistLayoutComponent = entryArtist.Transform.GetComponent<LayoutElement>();
-        entryArtistLayoutComponent.preferredWidth = 300;
+        entryArtistLayoutComponent.preferredWidth = 350;
         CustomTextMeshProUGUI entryArtistTextComponent = entryArtist.Transform.GetComponent<CustomTextMeshProUGUI>();
         entryArtistTextComponent.textWrappingMode = TextWrappingModes.NoWrap;
         entryArtistTextComponent.overflowMode = TextOverflowModes.Ellipsis;
@@ -178,7 +180,7 @@ public class QueueEntry
         
         CustomTextComponent entryMapper = UIHelper.CreateLabel(metadataGroup, "QueueEntryMapper", TranslationReference.Empty);
         LayoutElement entryMapperLayoutComponent = entryMapper.Transform.GetComponent<LayoutElement>();
-        entryMapperLayoutComponent.preferredWidth = 300;
+        entryMapperLayoutComponent.preferredWidth = 350;
         CustomTextMeshProUGUI entryMapperTextComponent = entryMapper.Transform.GetComponent<CustomTextMeshProUGUI>();
         entryMapperTextComponent.textWrappingMode = TextWrappingModes.NoWrap;
         entryMapperTextComponent.overflowMode = TextOverflowModes.Ellipsis;
@@ -190,7 +192,7 @@ public class QueueEntry
         CustomGroup buttonGroup = UIHelper.CreateGroup(entryGroup, "QueueEntryButtons", Axis.Horizontal);
         
         // lambda moment smh
-        UIHelper.CreateButton(buttonGroup, "PlayButton", "SpinRequests_PlayButtonText", async void () =>
+        CustomButton playButton = UIHelper.CreateButton(buttonGroup, "PlayButton", "SpinRequests_PlayButtonText", async void () =>
         {
             try
             {
@@ -262,6 +264,15 @@ public class QueueEntry
                 Plugin.Log.LogError(e);
             }
         });
+        playButton.Transform.GetComponent<LayoutElement>().preferredWidth = 200;
+        /*GameObject playIcon =
+            Object.Instantiate(GameObject.Find("PlaybackNavigationButtons/PlayButton/IconContainer/Icon"),
+                playButton.Transform.Find("IconContainer"));*/
+        //playIcon.transform.SetSiblingIndex(0);
+        //playButton.Transform.Find("IconContainer/ButtonText").GetComponent<LayoutElement>().ignoreLayout = true;
+        playButton.Transform.GetComponent<XDNavigable>().forceExpanded = true;
+        //playIcon.transform.GetComponent<LayoutElement>().ignoreLayout = true;
+        
         UIHelper.CreateButton(buttonGroup, "SkipButton", "SpinRequests_SkipButtonText", () =>
         {
             Plugin.Log.LogDebug($"SKIP -- {Title} ({SpinShareKey})");
