@@ -97,16 +97,43 @@ internal class HttpApi
         int code = 400;
         byte[] response = Encoding.Default.GetBytes("{\"message\": \"Invalid request\"}");
         
-        if (!int.TryParse(path.Last().Replace("/", string.Empty).ToLower(), NumberStyles.Integer,
-                CultureInfo.InvariantCulture, out int id))
-        {
-            goto finalResponse;
-        }
+        bool trySearch = !int.TryParse(path.Last().Replace("/", string.Empty).ToLower(), NumberStyles.Integer,
+            CultureInfo.InvariantCulture, out int id);
 
+        if (trySearch)
+        {
+            string searchString = Uri.UnescapeDataString(path.Last().Replace("/", string.Empty));
+            Plugin.Log.LogInfo($"Searching {searchString}");            
+            Content<Search> search = await Plugin.SpinShare.search(searchString);
+            
+            code = 404;
+            response = Encoding.Default.GetBytes("{\"message\": \"No results for search\"}");
+            if (search.status != 200)
+            {
+                Plugin.Log.LogInfo("Status wasn't 200");
+                goto finalResponse;
+            }
+            if (search.data.songs.Length == 0)
+            {
+                Plugin.Log.LogInfo("No results found for search");
+                goto finalResponse;
+            }
+            if (search.data.songs[0] == null)
+            {
+                // ok buddy
+                Plugin.Log.LogInfo("First result was null (wtf)");
+                goto finalResponse;
+            }
+
+            // SpinShareLib's Song class is missing metadata fields that are actually also there in the API result
+            // so we do it the less efficient way ;w;
+            id = search.data.songs[0].id;
+        }
+        
         Content<SongDetail> content = await Plugin.SpinShare.getSongDetail(id.ToString());
         SongDetail details = content.data;
         QueueEntry serializedData = new(details, query);
-                
+
         // ReSharper disable once InvertIf
         if (serializedData.SpinShareKey != null)
         {
