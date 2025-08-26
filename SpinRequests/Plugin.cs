@@ -29,6 +29,7 @@ public partial class Plugin : BaseUnityPlugin
 #endif
         
         RegisterConfigEntries();
+        CreateModPage();
         
         HttpApi httpApi = new();
         httpApi.Initialize();

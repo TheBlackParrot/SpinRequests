@@ -24,7 +24,7 @@ public partial class Plugin
             "Show notifications for maps added to the queue");
     }
 
-    private void CreateModPage()
+    private static void CreateModPage()
     {
         CustomPage rootModPage = UIHelper.CreateCustomPage("ModSettings");
         rootModPage.OnPageLoad += RootModPageOnOnPageLoad;
