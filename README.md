@@ -41,6 +41,7 @@ As this is really only a web server, you can test any of these endpoints in any 
 ```json
 {
   "Title": <string>,
+  "Subtitle": <string>,
   "Artist": <string>,
   "Mapper": <string>,
   "SpinShareKey": <integer>,
