@@ -110,7 +110,7 @@ public class QueueEntry
         // a bunch of UI functions happen here and Unity gets Very Very Angry if we're not on the main thread
         await Awaitable.MainThreadAsync();
 
-        if (!silent)
+        if (!silent && Plugin.EnableQueueNotifications.Value)
         {
             NotificationSystemGUI.AddMessage(
                 $"<b>{Requester}</b> added <i>{Title}</i> <alpha=#AA>({SpinShareKey})<alpha=#FF> to the queue!", 7f);

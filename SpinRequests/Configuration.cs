@@ -1,4 +1,7 @@
 ﻿using BepInEx.Configuration;
+using SpinCore.Translation;
+using SpinCore.UI;
+using UnityEngine;
 
 namespace SpinRequests;
 
@@ -6,6 +9,8 @@ public partial class Plugin
 {
     internal static ConfigEntry<int> HttpPort = null!;
     internal static ConfigEntry<string> HttpAddress = null!;
+    
+    internal static ConfigEntry<bool> EnableQueueNotifications = null!;
 
     private void RegisterConfigEntries()
     {
@@ -14,5 +19,34 @@ public partial class Plugin
         
         HttpPort = Config.Bind("API", "HttpPort", 6969, 
             "Port for the HTTP API to listen on");
+
+        EnableQueueNotifications = Config.Bind("General", "EnableQueueNotifications", true,
+            "Show notifications for maps added to the queue");
+    }
+
+    private void CreateModPage()
+    {
+        CustomPage rootModPage = UIHelper.CreateCustomPage("ModSettings");
+        rootModPage.OnPageLoad += RootModPageOnOnPageLoad;
+        
+        UIHelper.RegisterMenuInModSettingsRoot("SpinRequests_ModName", rootModPage);
+        
+        TranslationHelper.AddTranslation("SpinRequests_EnableQueueNotifications", "Enable queue notifications");
+    }
+
+    private static void RootModPageOnOnPageLoad(Transform rootModPageTransform)
+    {
+        CustomGroup modGroup = UIHelper.CreateGroup(rootModPageTransform, nameof(SpinRequests));
+        UIHelper.CreateSectionHeader(modGroup, "ModGroupHeader", "SpinRequests_ModName", false);
+            
+        #region EnableQueueNotifications
+        CustomGroup enableQueueNotificationsGroup = UIHelper.CreateGroup(modGroup, "EnableQueueNotificationsGroup");
+        enableQueueNotificationsGroup.LayoutDirection = Axis.Horizontal;
+        UIHelper.CreateSmallToggle(enableQueueNotificationsGroup, nameof(EnableQueueNotifications),
+            "SpinRequests_EnableQueueNotifications", EnableQueueNotifications.Value, value =>
+            {
+                EnableQueueNotifications.Value = value;
+            });
+        #endregion
     }
 }
