@@ -41,6 +41,7 @@ public class QueueEntry
     public string? FileReference { get; set; } = string.Empty;
     public long? UploadTime { get; set; }
     public bool HasPlayed => FileReference != null && Plugin.PlayedMapHistory.Any(x => x.FileReference == FileReference);
+    public bool InQueue => FileReference != null && QueueList.Entries.Concat(QueueList.BufferedList).Any(x => x.FileReference == FileReference);
     // ReSharper restore UnusedAutoPropertyAccessor.Global
     // ReSharper restore MemberCanBePrivate.Global
     
