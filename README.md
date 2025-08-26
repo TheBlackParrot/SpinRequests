@@ -56,7 +56,8 @@ As this is really only a web server, you can test any of these endpoints in any 
   "ActiveDifficulty": <string (nullable)>,
   "AlreadyDownloaded": <boolean>,
   "FileReference": <string (nullable)> (filename of the map data),
-  "UploadTime": <integer (nullable)>
+  "UploadTime": <integer (nullable)>,
+  "HasPlayed": <boolean>
 }
 ```
 > [!NOTE]
