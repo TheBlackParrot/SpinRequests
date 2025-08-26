@@ -103,34 +103,74 @@ internal class HttpApi
         if (trySearch)
         {
             string searchString = Uri.UnescapeDataString(path.Last().Replace("/", string.Empty));
-            Plugin.Log.LogInfo($"Searching {searchString}");            
-            Content<Search> search = await Plugin.SpinShare.search(searchString);
-            
-            code = 404;
-            response = Encoding.Default.GetBytes("{\"message\": \"No results for search\"}");
-            if (search.status != 200)
+            Plugin.Log.LogInfo($"Searching {searchString}");
+            try
             {
-                Plugin.Log.LogInfo("Status wasn't 200");
+                Content<Search> search = await Plugin.SpinShare.search(searchString);
+
+                code = 404;
+                response = Encoding.Default.GetBytes("{\"message\": \"No results for search\"}");
+                if (search.status != 200)
+                {
+                    Plugin.Log.LogInfo("Status wasn't 200");
+                    goto finalResponse;
+                }
+
+                if (search.data.songs.Length == 0)
+                {
+                    Plugin.Log.LogInfo("No results found for search");
+                    goto finalResponse;
+                }
+
+                if (search.data.songs[0] == null)
+                {
+                    // ok buddy
+                    Plugin.Log.LogInfo("First result was null (wtf)");
+                    goto finalResponse;
+                }
+
+                // SpinShareLib's Song class is missing metadata fields that are actually also there in the API result
+                // so we do it the less efficient way ;w;
+                id = search.data.songs[0].id;
+            }
+            catch (Exception exception)
+            {
+                if (exception is TaskCanceledException)
+                {
+                    code = 504;
+                    response = Encoding.Default.GetBytes("{\"message\": \"SpinShare API request timed out\"}");
+                    Plugin.Log.LogInfo("Request timed out");
+                    goto finalResponse;
+                }
+
+                code = 500;
+                response = Encoding.Default.GetBytes("{\"message\": \"" + exception.Message + "\"}");
+                Plugin.Log.LogError(exception);
                 goto finalResponse;
             }
-            if (search.data.songs.Length == 0)
+        }
+
+        Content<SongDetail> content;
+        try
+        {
+            content = await Plugin.SpinShare.getSongDetail(id.ToString());
+        }
+        catch (Exception exception)
+        {
+            if (exception is TaskCanceledException)
             {
-                Plugin.Log.LogInfo("No results found for search");
-                goto finalResponse;
-            }
-            if (search.data.songs[0] == null)
-            {
-                // ok buddy
-                Plugin.Log.LogInfo("First result was null (wtf)");
+                code = 504;
+                response = Encoding.Default.GetBytes("{\"message\": \"SpinShare API request timed out\"}");
+                Plugin.Log.LogInfo("Request timed out");
                 goto finalResponse;
             }
 
-            // SpinShareLib's Song class is missing metadata fields that are actually also there in the API result
-            // so we do it the less efficient way ;w;
-            id = search.data.songs[0].id;
+            code = 500;
+            response = Encoding.Default.GetBytes("{\"message\": \"" + exception.Message + "\"}");
+            Plugin.Log.LogError(exception);
+            goto finalResponse;
         }
-        
-        Content<SongDetail> content = await Plugin.SpinShare.getSongDetail(id.ToString());
+
         SongDetail details = content.data;
         QueueEntry serializedData = new(details, query);
 
