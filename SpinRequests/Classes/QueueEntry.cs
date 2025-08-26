@@ -20,7 +20,8 @@ public class QueueEntry
     // ReSharper disable MemberCanBePrivate.Global
     // ReSharper disable UnusedAutoPropertyAccessor.Global
     public string Title { get; set; } = string.Empty;
-    [JsonIgnore] private string TitleFormatted { get; set; } = string.Empty;
+    public string Subtitle { get; set; } = string.Empty;
+    [JsonIgnore] private string TitleFormatted => $"<b>{Title}</b>{(string.IsNullOrEmpty(Subtitle) ? "" : " <size=75%><alpha=#AA>" + Subtitle)}";
     public string Artist { get; set; } = string.Empty;
     public string Mapper { get; set; } = string.Empty;
     public int? SpinShareKey { get; set; }
@@ -44,8 +45,8 @@ public class QueueEntry
     
     public QueueEntry(SongDetail details, Dictionary<string, string>? query = null)
     {
-        Title = $"{details.title}{(string.IsNullOrEmpty(details.subtitle) ? "" : " - " + details.subtitle)}";
-        TitleFormatted = $"<b>{details.title}</b>{(string.IsNullOrEmpty(details.subtitle) ? "" : " <size=75%><alpha=#AA>" + details.subtitle)}";
+        Title = details.title;
+        Subtitle = details.subtitle;
         Artist = details.artist;
         Mapper = details.charter;
         SpinShareKey = details.id;
@@ -82,6 +83,7 @@ public class QueueEntry
         MetadataHandle metadataHandle = trackData.Setup.TrackDataSegmentForSingleTrackDataSetup.metadata;
         
         Title = metadata.title;
+        Subtitle = metadata.subtitle;
         Artist = metadata.artistName;
         Mapper = metadata.charter;
         
@@ -250,6 +252,7 @@ public class QueueEntry
                 XDSelectionListMenu.Instance.ScrollToTrack(metadataHandle);
                 QueueList.Entries.Remove(this);
                 QueueList.CheckIndicatorDot();
+                QueueList.SavePersistentQueue();
                 Object.DestroyImmediate(entryGroup.GameObject);
             }
             catch (Exception e)
@@ -262,11 +265,13 @@ public class QueueEntry
             Plugin.Log.LogDebug($"SKIP -- {Title} ({SpinShareKey})");
             QueueList.Entries.Remove(this);
             QueueList.CheckIndicatorDot();
+            QueueList.SavePersistentQueue();
             Object.DestroyImmediate(entryGroup.GameObject);
         });
         #endregion
         
         QueueList.Entries.Add(this);
         QueueList.CheckIndicatorDot();
+        QueueList.SavePersistentQueue();
     }
 }

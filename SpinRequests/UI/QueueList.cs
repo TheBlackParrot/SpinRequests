@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using SpinCore.UI;
 using SpinRequests.Classes;
 using UnityEngine;
@@ -14,6 +16,8 @@ internal static class QueueList
     
     internal static readonly List<QueueEntry> BufferedList = [];
     internal static readonly List<QueueEntry> Entries = [];
+    
+    private static string PersistentQueueFilename => Path.Combine(Plugin.DataPath, "queue.json");
 
     internal static void CreateQueueListPanel()
     {
@@ -44,6 +48,7 @@ internal static class QueueList
     private static async Task LoadBufferedQueue()
     {
         await Awaitable.MainThreadAsync();
+        await LoadPersistentQueue();
         
         foreach (QueueEntry entry in BufferedList)
         {
@@ -52,6 +57,32 @@ internal static class QueueList
         
         BufferedList.Clear();
     }
+
+    private static async Task LoadPersistentQueue()
+    {
+        await Awaitable.MainThreadAsync();
+        
+        if (!File.Exists(PersistentQueueFilename))
+        {
+            Plugin.Log.LogInfo("No persistent queue data, skipping loading it");
+            return;
+        }
+        
+        Plugin.Log.LogInfo("Loading persistent queue...");
+        
+        QueueEntry[]? entries = JsonConvert.DeserializeObject<QueueEntry[]>(File.ReadAllText(PersistentQueueFilename));
+        if (entries == null)
+        {
+            Plugin.Log.LogInfo("Persistent queue was empty");
+            return;
+        }
+
+        BufferedList.AddRange(entries);
+        Plugin.Log.LogInfo("Loaded persistent queue");
+    }
+
+    internal static void SavePersistentQueue() => File.WriteAllText(Path.Combine(Plugin.DataPath, "queue.json"),
+        JsonConvert.SerializeObject(Entries, Formatting.Indented));
 
     internal static void CheckIndicatorDot()
     {

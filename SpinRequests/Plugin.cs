@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using BepInEx;
 using BepInEx.Logging;
@@ -16,6 +17,7 @@ public partial class Plugin : BaseUnityPlugin
 {
     internal static ManualLogSource Log = null!;
     internal static string CustomsPath => CustomAssetLoadingHelper.CUSTOM_DATA_PATH;
+    internal static string DataPath => Path.Combine(Paths.ConfigPath, "SpinRequests");
     internal static readonly SSAPI SpinShare = new();
 
     private void Awake()
@@ -36,6 +38,11 @@ public partial class Plugin : BaseUnityPlugin
         TranslationHelper.AddTranslation("SpinRequests_MenuButtonText", "Requests");
         TranslationHelper.AddTranslation("SpinRequests_PlayButtonText", "Play");
         TranslationHelper.AddTranslation("SpinRequests_SkipButtonText", "Skip");
+
+        if (!Directory.Exists(DataPath))
+        {
+            Directory.CreateDirectory(DataPath);
+        }
         
         Logger.LogInfo("Plugin loaded");
     }
