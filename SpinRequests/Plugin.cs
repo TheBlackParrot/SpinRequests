@@ -34,6 +34,9 @@ public partial class Plugin : BaseUnityPlugin
         HttpApi httpApi = new();
         httpApi.Initialize();
         
+        SocketApi socketApi = new();
+        socketApi.Initialize();
+        
         TranslationHelper.AddTranslation("SpinRequests_ModName", nameof(SpinRequests));
         TranslationHelper.AddTranslation("SpinRequests_RequestQueueText", "Map Request Queue");
         TranslationHelper.AddTranslation("SpinRequests_MenuButtonText", "Requests");

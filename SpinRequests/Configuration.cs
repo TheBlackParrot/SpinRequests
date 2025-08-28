@@ -10,6 +10,9 @@ public partial class Plugin
     internal static ConfigEntry<int> HttpPort = null!;
     internal static ConfigEntry<string> HttpAddress = null!;
     
+    internal static ConfigEntry<int> SocketPort = null!;
+    internal static ConfigEntry<string> SocketAddress = null!;
+    
     internal static ConfigEntry<bool> EnableQueueNotifications = null!;
 
     private void RegisterConfigEntries()
@@ -19,6 +22,12 @@ public partial class Plugin
         
         HttpPort = Config.Bind("API", "HttpPort", 6969, 
             "Port for the HTTP API to listen on");
+        
+        SocketAddress = Config.Bind("API", "SocketAddress", "127.0.0.1",
+            "IP address for the WebSocket firehose to listen on");
+        
+        SocketPort = Config.Bind("API", "SocketPort", 6970,
+            "Port for the WebSocket firehose to listen on");
 
         EnableQueueNotifications = Config.Bind("General", "EnableQueueNotifications", true,
             "Show notifications for maps added to the queue");

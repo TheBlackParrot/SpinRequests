@@ -20,12 +20,14 @@
         <DebugType>full</DebugType>
         <DebugSymbols>true</DebugSymbols>
         <Optimize>false</Optimize>
+        <NoWarn>1701;1702;0162</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
         <DebugType>none</DebugType>
         <DebugSymbols>false</DebugSymbols>
         <Optimize>true</Optimize>
+        <NoWarn>1701;1702;0162</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\Spin Rhythm')">
@@ -53,6 +55,9 @@
         </Reference>
         <Reference Include="Newtonsoft.Json">
             <HintPath>$(BaseGameDir)\BepInEx\plugins\Newtonsoft.Json.dll</HintPath>
+        </Reference>
+        <Reference Include="WebSocketSharp">
+            <HintPath>$(BaseGameDir)\BepInEx\plugins\websocket-sharp.dll</HintPath>
         </Reference>
         <Reference Include="SSD.Game">
             <HintPath>$(BaseGameDir)\SpinRhythm_Data\Managed\SSD.Game.dll</HintPath>

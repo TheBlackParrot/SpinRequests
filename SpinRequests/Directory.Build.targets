@@ -1,5 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project>
+    <PropertyGroup>
+        <OutputDirectory>$(ProjectDir)bin\$(Configuration)\$(TargetFramework)\Output\</OutputDirectory>
+        <OutputZipDirectory>$(OutputDirectory)zip\</OutputZipDirectory>
+        <OutputFilesDirectory>$(OutputDirectory)files\</OutputFilesDirectory>
+    </PropertyGroup>
+    
     <Target Name="PostBuildScript" AfterTargets="AfterBuild">
         <Message Text="-> Copying $(TargetPath) to $(BaseGameDir)\BepInEx\plugins" Importance="high"/>
         <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BaseGameDir)\BepInEx\plugins"
@@ -9,5 +15,67 @@
         <Message Text="-> Copying $(ProjectDir)bin\Debug\$(TargetFramework)\$(AssemblyName).pdb to $(BaseGameDir)\BepInEx\plugins" Importance="high"/>
         <Copy SourceFiles="$(ProjectDir)bin\Debug\$(TargetFramework)\$(AssemblyName).pdb" DestinationFolder="$(BaseGameDir)\BepInEx\plugins"
               SkipUnchangedFiles="false" OverwriteReadOnlyFiles="true"/>
+    </Target>
+
+    <Target Name="CreateOutputDir" BeforeTargets="Build">
+        <Message Text="Creating output directory: '$(OutputDirectory)'" Importance="high"/>
+        <MakeDir Directories="$(OutputDirectory)" Condition="!Exists($(OutputDirectory))"/>
+        <MakeDir Directories="$(OutputZipDirectory)" Condition="!Exists($(OutputZipDirectory))"/>
+        <MakeDir Directories="$(OutputFilesDirectory)" Condition="!Exists($(OutputFilesDirectory))"/>
+    </Target>
+
+    <!-- Source: https://stackoverflow.com/a/38127938 -->
+    <!-- https://github.com/Zingabopp/BeatSaberModdingTools/blob/7b4bb48d2ce9656ccf65b4a09c09a66e150553dc/BSMT_Tests/Data/BSMLPractice.csproj#L278 -->
+    <UsingTask TaskName="ZipDir" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+        <ParameterGroup>
+            <ZipFileName ParameterType="System.String" Required="true" />
+            <DirectoryName ParameterType="System.String" Required="true" />
+        </ParameterGroup>
+        <Task>
+            <Using Namespace="System.IO.Compression" />
+            <Using Namespace="System.IO" />
+            <Using Namespace="System.Threading" />
+            <Code Type="Fragment" Language="cs"><![CDATA[
+        #pragma warning disable CS0162
+        try
+        {
+          var zipDir = new DirectoryInfo(Path.GetDirectoryName(Path.GetFullPath(ZipFileName)));
+          if (zipDir.Exists)
+            zipDir.Delete(true);
+          zipDir.Create();
+          zipDir.Refresh();
+          int tries = 0;
+          while(!zipDir.Exists || tries < 10) // Prevents breaking when Explorer is in the folder.
+          {
+            tries++;
+            Thread.Sleep(50);
+            zipDir.Create();
+            zipDir.Refresh();
+          }
+		  
+          if(File.Exists(ZipFileName))
+            File.Delete(ZipFileName);
+          Log.LogMessage(MessageImportance.High, "Zipping Directory {0} to {1}", DirectoryName, ZipFileName);
+          ZipFile.CreateFromDirectory( DirectoryName, ZipFileName );
+          return true;
+        }
+        catch(Exception ex)
+        {
+          Log.LogErrorFromException(ex);
+          return false;
+        }
+      ]]></Code>
+        </Task>
+    </UsingTask>
+
+    <Target Name="ZipRelease" AfterTargets="Build">
+        <ItemGroup>
+            <OldZips Include="$(OutputZipDirectory)*.zip"/>
+        </ItemGroup>
+        <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(OutputFilesDirectory)$(AssemblyName).dll" />
+        <Copy SourceFiles="$(ProjectDir)bin\Debug\$(TargetFramework)\websocket-sharp.dll" DestinationFolder="$(OutputFilesDirectory)"
+              SkipUnchangedFiles="true"/>
+        <Delete Files="@(OldZips)" TreatErrorsAsWarnings="true" ContinueOnError="true" />
+        <ZipDir DirectoryName="$(OutputFilesDirectory)" ZipFileName="$(OutputZipDirectory)$(AssemblyName)-$(Version).zip" />
     </Target>
 </Project>

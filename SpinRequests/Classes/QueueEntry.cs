@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SpinCore.UI;
+using SpinRequests.Services;
 using SpinRequests.UI;
 using SpinShareLib.Types;
 using TMPro;
@@ -322,6 +323,7 @@ public class QueueEntry
                 QueueList.Entries.Remove(this);
                 QueueList.CheckIndicatorDot();
                 QueueList.SavePersistentQueue();
+                SocketApi.Broadcast("Played", this);
                 Object.DestroyImmediate(entryGroup.GameObject);
             }
             catch (Exception e)
@@ -330,13 +332,7 @@ public class QueueEntry
             }
         });
         playButton.Transform.GetComponent<LayoutElement>().preferredWidth = 200;
-        /*GameObject playIcon =
-            Object.Instantiate(GameObject.Find("PlaybackNavigationButtons/PlayButton/IconContainer/Icon"),
-                playButton.Transform.Find("IconContainer"));*/
-        //playIcon.transform.SetSiblingIndex(0);
-        //playButton.Transform.Find("IconContainer/ButtonText").GetComponent<LayoutElement>().ignoreLayout = true;
         playButton.Transform.GetComponent<XDNavigable>().forceExpanded = true;
-        //playIcon.transform.GetComponent<LayoutElement>().ignoreLayout = true;
         
         UIHelper.CreateButton(buttonGroup, "SkipButton", "SpinRequests_SkipButtonText", () =>
         {
@@ -344,6 +340,7 @@ public class QueueEntry
             QueueList.Entries.Remove(this);
             QueueList.CheckIndicatorDot();
             QueueList.SavePersistentQueue();
+            SocketApi.Broadcast("Skipped", this);
             Object.DestroyImmediate(entryGroup.GameObject);
         });
         #endregion
@@ -351,5 +348,14 @@ public class QueueEntry
         QueueList.Entries.Add(this);
         QueueList.CheckIndicatorDot();
         QueueList.SavePersistentQueue();
+        
+#if RELEASE
+        if (!silent)
+        {
+            SocketApi.Broadcast("AddedToQueue", this);
+        }
+#else
+        SocketApi.Broadcast("AddedToQueue", this);
+#endif
     }
 }
