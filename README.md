@@ -44,18 +44,19 @@ By default, a WebSocket server is started on `http://127.0.0.1:6970`, acting as 
 ## Events
 You can use these events in any way you would like to -- the intentions here are listed to explain the intended use.
 
-| Event          | Intention                                                        |
-|----------------|------------------------------------------------------------------|
-| `AddedToQueue` | A map was added to the queue                                     |
-| `Played`       | Playing a requested map                                          |
-| `Skipped`      | Skipping a requested map                                         |
+| Event             | Intention                       | Data object type           |
+|-------------------|---------------------------------|----------------------------|
+| `AddedToQueue`    | A map was added to the queue    | [Map Data](#map-data-type) |
+| `Played`          | Playing a requested map         | [Map Data](#map-data-type) |
+| `Skipped`         | Skipping a requested map        | [Map Data](#map-data-type) |
+| `RequestsAllowed` | Requests are allowed/disallowed | Boolean                    |
 
 All events follow the same data structure:
 ```json
 {
   "Timestamp": <integer (unix timestamp in ms)>,
   "EventType": <string>,
-  "Data": <object (map data)>
+  "Data": <dynamic (see table above)>
 }
 ```
 

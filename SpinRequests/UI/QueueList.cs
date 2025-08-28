@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SpinCore.UI;
 using SpinRequests.Classes;
+using SpinRequests.Services;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace SpinRequests.UI;
 
@@ -17,6 +17,8 @@ internal static class QueueList
     
     internal static readonly List<QueueEntry> BufferedList = [];
     internal static readonly List<QueueEntry> Entries = [];
+    
+    internal static bool IsOpen = false;
     
     private static string PersistentQueueFilename => Path.Combine(Plugin.DataPath, "queue.json");
 
@@ -39,10 +41,20 @@ internal static class QueueList
     private static void QueueListPanelOnSidePanelLoaded(Transform panelTransform)
     {
         QueueListPanel!.OnSidePanelLoaded -= QueueListPanelOnSidePanelLoaded;
-        QueueListContainer = UIHelper.CreateGroup(panelTransform, "QueueListContainer");
         
-        CheckIndicatorDot();
+        CustomGroup queueListOptionsGroup = UIHelper.CreateGroup(panelTransform, "QueueListOptionsGroup");
+        queueListOptionsGroup.LayoutDirection = Axis.Horizontal;
+        UIHelper.CreateSmallToggle(queueListOptionsGroup, "AllowRequestsToggle",
+            "SpinRequests_AllowRequestsText", IsOpen, value =>
+            {
+                IsOpen = value;
+                SocketApi.Broadcast("RequestsAllowed", IsOpen);
+            });
 
+        UIHelper.CreateSectionHeader(panelTransform, "QueueListListHeader", "SpinRequests_MenuButtonText", false);
+
+        QueueListContainer = UIHelper.CreateGroup(panelTransform, "QueueListContainer");
+        CheckIndicatorDot();
         _ = LoadBufferedQueue();
     }
 

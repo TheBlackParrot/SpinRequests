@@ -42,6 +42,7 @@ public partial class Plugin : BaseUnityPlugin
         TranslationHelper.AddTranslation("SpinRequests_MenuButtonText", "Requests");
         TranslationHelper.AddTranslation("SpinRequests_PlayButtonText", "Play");
         TranslationHelper.AddTranslation("SpinRequests_SkipButtonText", "Skip");
+        TranslationHelper.AddTranslation("SpinRequests_AllowRequestsText", "Allow requests");
 
         if (!Directory.Exists(DataPath))
         {
