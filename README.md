@@ -12,7 +12,7 @@ Any streaming bot you use (e.g. Streamer.bot, Firebot, MixItUp, etc.) now has re
 - SpinShareLib
 
 # HTTP API
-By default, a simple HTTP server is started on http://127.0.0.1:6969. Port and IP can be changed in the mod's JSON configuration file. A game restart (a hard restart) is required for changes to take effect.
+By default, a simple HTTP server is started on http://127.0.0.1:6969. Port and IP can be changed in the mod's JSON configuration file. A game restart is required for changes to take effect.
 
 > [!CAUTION]
 > It is **NOT RECOMMENDED** to let this listen on a public IP address. Unless you know what you're doing, stick to `localhost`/`127.x.x.x` IP ranges or any LAN IP range (`10.x.x.x`; `172.16.x.x - 172.31.x.x`; or `192.168.x.x`).
@@ -31,6 +31,33 @@ As this is really only a web server, you can test any of these endpoints in any 
 
 > [!NOTE]
 > SpinShare supports map links using file reference codes, integer IDs are not needed. (e.g. `https://spinsha.re/song/spinshare_688b977c51882`)
+
+# WebSocket API
+By default, a WebSocket server is started on `http://127.0.0.1:6970`, acting as a firehose (meaning it just spits out information, no input is taken into account). Port and IP can be changed in the mod's configuration file. A game restart is required for changes to take effect.
+
+> [!CAUTION]
+> It is **NOT RECOMMENDED** to let this listen on a public IP address. Unless you know what you're doing, stick to `localhost`/`127.x.x.x` IP ranges or any LAN IP range (`10.x.x.x`; `172.16.x.x - 172.31.x.x`; or `192.168.x.x`).
+
+**This is only used for events pertaining to the queue, and actions taken on the queue to avoid feature creep with other mods adding WebSocket support for other data.** You do not need to use this if you don't want to or can't use it.
+
+<a name="websocket-events"></a>
+## Events
+You can use these events in any way you would like to -- the intentions here are listed to explain the intended use.
+
+| Event          | Intention                                                        |
+|----------------|------------------------------------------------------------------|
+| `AddedToQueue` | A map was added to the queue                                     |
+| `Played`       | Playing a requested map                                          |
+| `Skipped`      | Skipping a requested map                                         |
+
+All events follow the same data structure:
+```json
+{
+  "Timestamp": <integer (unix timestamp in ms)>,
+  "EventType": <string>,
+  "Data": <object (map data)>
+}
+```
 
 # Data structures/schema
 
@@ -65,3 +92,7 @@ As this is really only a web server, you can test any of these endpoints in any 
 > SpinShare does not respond with any data pertaining to the RemiXD difficulty (if present), this can only be generated using data from in-game.
 > 
 > *For the time being, this can only be set from the `/history` endpoint, otherwise it will always be null.*
+ 
+---
+
+**Project includes source files from [websocket-sharp](https://github.com/sta/websocket-sharp/tree/01a1a7559f21e38af1045a1ae1e8c123416b6df3), licensed under MIT**
