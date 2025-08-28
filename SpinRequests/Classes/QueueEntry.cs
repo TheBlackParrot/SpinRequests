@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SpinCore.UI;
@@ -17,6 +18,14 @@ namespace SpinRequests.Classes;
 
 public class QueueEntry
 {
+    [JsonIgnore] private static readonly Dictionary<string, string> DifficultyAbbreviations = new()
+    {
+        { "Easy", "E" },
+        { "Normal", "N" },
+        { "Hard", "H" },
+        { "Expert", "EX" },
+        { "XD", "XD" }
+    };
     // ReSharper disable MemberCanBePrivate.Global
     // ReSharper disable UnusedAutoPropertyAccessor.Global
     public string Title { get; set; } = string.Empty;
@@ -37,6 +46,16 @@ public class QueueEntry
     public int? RemiXDRating { get; set; }
     // ReSharper restore InconsistentNaming
     public string? ActiveDifficulty { get; set; }
+    public Dictionary<string, int?> DifficultyAsDictionary() {
+        return new Dictionary<string, int?>
+        {
+            {"Easy", EasyRating},
+            {"Normal", NormalRating},
+            {"Hard", HardRating},
+            {"Expert", ExpertRating},
+            {"XD", XDRating},
+        };
+    }
     public bool AlreadyDownloaded => FileReference == null || File.Exists(Path.Combine(Plugin.CustomsPath, $"{FileReference}.srtb"));
     public string? FileReference { get; set; } = string.Empty;
     public long? UploadTime { get; set; }
@@ -186,6 +205,52 @@ public class QueueEntry
         entryMapperTextComponent.overflowMode = TextOverflowModes.Ellipsis;
         entryMapperTextComponent.fontSize = 24;
         entryMapper.ExtraText = $"<alpha=#AA>charted by <alpha=#FF>{Mapper}";
+        #endregion
+        
+        #region difficulty labels
+        CustomGroup diffLabelGroup = UIHelper.CreateGroup(entryGroup, "QueueDiffLabels", Axis.Horizontal);
+        diffLabelGroup.Transform.GetComponent<HorizontalLayoutGroup>().childForceExpandHeight = false;
+        
+        Dictionary<string, int?> diffDict = DifficultyAsDictionary();
+        Dictionary<string, CustomButton> diffLabels = new()
+        {
+            { "Easy", UIHelper.CreateButton(diffLabelGroup, "EasyDiffLabel", TranslationReference.Empty, () => { }) },
+            { "Normal", UIHelper.CreateButton(diffLabelGroup, "NormalDiffLabel", TranslationReference.Empty, () => { }) },
+            { "Hard", UIHelper.CreateButton(diffLabelGroup, "HardDiffLabel", TranslationReference.Empty, () => { }) },
+            { "Expert", UIHelper.CreateButton(diffLabelGroup, "ExpertDiffLabel", TranslationReference.Empty, () => { }) },
+            { "XD", UIHelper.CreateButton(diffLabelGroup, "XDDiffLabel", TranslationReference.Empty, () => { }) }
+        };
+        foreach (string diff in diffLabels.Keys)
+        {
+            CustomButton label = diffLabels[diff];
+            label.RemoveAllListeners();
+            
+            LayoutElement layoutElement = label.Transform.GetComponent<LayoutElement>();
+            layoutElement.preferredHeight = 50;
+            
+            XDNavigable navigable = label.Transform.GetComponent<XDNavigable>();
+            navigable.forceExpanded = diffDict[diff] != null;
+            navigable.navigable = false;
+            navigable.canBeDefaultNavigable = false;
+            navigable.selectOnHover = false;
+            navigable.glyphType = XDNavigable.GlyphType.None;
+            
+            CanvasGroup canvasGroup = label.Transform.GetComponent<CanvasGroup>();
+            canvasGroup.interactable = false;
+            canvasGroup.blocksRaycasts = false;
+            
+            XDNavigableButton navigableButton = label.Transform.GetComponent<XDNavigableButton>();
+            navigableButton.interactable = false;
+            
+            CustomTextMeshProUGUI labelTextComponent = label.Transform.Find("IconContainer/ButtonText").GetComponent<CustomTextMeshProUGUI>();
+            labelTextComponent.richText = true;
+            labelTextComponent.fontSizeMin = 24;
+            labelTextComponent.fontSizeMax = 24;
+            labelTextComponent.fontStyle = FontStyles.Normal;
+            
+            TranslatedTextMeshPro translatedTextMeshPro = label.Transform.Find("IconContainer/ButtonText").GetComponent<TranslatedTextMeshPro>();
+            translatedTextMeshPro.TextToAppend = $"{DifficultyAbbreviations[diff]} <space=0.2em> <b>" + (diffDict[diff] == null ? "-" : diffDict[diff].ToString()) + "</b>";
+        }
         #endregion
         
         #region buttons
