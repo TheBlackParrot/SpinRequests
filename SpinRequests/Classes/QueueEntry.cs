@@ -268,8 +268,11 @@ public class QueueEntry
 
                 if (!AlreadyDownloaded)
                 {
-                    XDSelectionListMenu.Instance.ScrollToTrack(PlayerSettingsData.Instance.LastPlayedTrackHandle);
-                    
+                    if (!XDSelectionListMenu.Instance.ShouldBeOpen)
+                    {
+                        XDSelectionListMenu.Instance.ScrollToTrack(PlayerSettingsData.Instance.LastPlayedTrackHandle);
+                    }
+
                     NotificationSystemGUI.AddMessage($"Downloading map {SpinShareKey}...", 5f);
                     
                     await Plugin.SpinShare.downloadSongAndUnzip(SpinShareKey.ToString(), Plugin.CustomsPath);
