@@ -56,6 +56,9 @@
         <Reference Include="Newtonsoft.Json">
             <HintPath>$(BaseGameDir)\BepInEx\plugins\Newtonsoft.Json.dll</HintPath>
         </Reference>
+        <Reference Include="System.Net.Http">
+          <HintPath>$(BaseGameDir)\SpinRhythm_Data\Managed\System.Net.Http.dll</HintPath>
+        </Reference>
         <Reference Include="WebSocketSharp">
             <HintPath>$(BaseGameDir)\BepInEx\plugins\websocket-sharp.dll</HintPath>
         </Reference>
