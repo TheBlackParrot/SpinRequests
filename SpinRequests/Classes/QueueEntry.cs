@@ -268,9 +268,20 @@ public class QueueEntry
 
                 if (!AlreadyDownloaded)
                 {
-                    if (!XDSelectionListMenu.Instance.ShouldBeOpen)
+                    WorldMenuGameState? worldMenuGameState = Object.FindAnyObjectByType<WorldMenuGameState>();
+                    Transform? levelSelectTransform = worldMenuGameState?.transform.Find("LevelSelect");
+                    GameState? levelSelectGameState = levelSelectTransform?.GetComponent<GameState>();
+                    if (levelSelectGameState != null)
                     {
-                        XDSelectionListMenu.Instance.ScrollToTrack(PlayerSettingsData.Instance.LastPlayedTrackHandle);
+                        if (!levelSelectGameState.ShouldBeActive)
+                        {
+                            // this navigates the player back to the map selection menu too
+                            XDSelectionListMenu.Instance.ScrollToTrack(PlayerSettingsData.Instance.LastPlayedTrackHandle);
+                        }
+                    }
+                    else
+                    {
+                        Plugin.Log.LogWarning("uh levelSelectGameState is null?");
                     }
 
                     NotificationSystemGUI.AddMessage($"Downloading map {SpinShareKey}...", 5f);
