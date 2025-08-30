@@ -48,6 +48,7 @@ public partial class Plugin : BaseUnityPlugin
         TranslationHelper.AddTranslation("SpinRequests_PlayButtonText", "Play");
         TranslationHelper.AddTranslation("SpinRequests_SkipButtonText", "Skip");
         TranslationHelper.AddTranslation("SpinRequests_AllowRequestsText", "Allow requests");
+        TranslationHelper.AddTranslation("SpinRequests_GitHubButtonText", "SpinRequests Releases (GitHub)");
 
         if (!Directory.Exists(DataPath))
         {
@@ -101,7 +102,7 @@ public partial class Plugin : BaseUnityPlugin
                 
                 await Awaitable.MainThreadAsync();
                 NotificationSystemGUI.AddMessage(
-                    $"<b>{nameof(SpinRequests)}</b> has an update available! <alpha=#AA>(v{currentVersion} -> v{latestVersion})", 10f);
+                    $"<b>{nameof(SpinRequests)}</b> has an update available! See the shortcut button in the Mod Settings page to grab the latest update. <alpha=#AA>(v{currentVersion} -> v{latestVersion})", 10f);
             }
             else
             {

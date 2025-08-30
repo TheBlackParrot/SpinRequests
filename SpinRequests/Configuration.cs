@@ -57,5 +57,10 @@ public partial class Plugin
                 EnableQueueNotifications.Value = value;
             });
         #endregion
+
+        UIHelper.CreateButton(modGroup, "OpenSpinRequestsRepositoryButton", "SpinRequests_GitHubButtonText", () =>
+        {
+            Application.OpenURL($"https://github.com/TheBlackParrot/{nameof(SpinRequests)}/releases/latest");
+        });
     }
 }
