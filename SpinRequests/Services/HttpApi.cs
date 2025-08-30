@@ -97,11 +97,26 @@ internal class HttpApi
         int code = 400;
         byte[] response = Encoding.Default.GetBytes("{\"message\": \"Invalid request\"}");
 
+        bool forced = false;
+        if (query != null)
+        {
+            if (query.TryGetValue("force", out string forcedString))
+            {
+                if (bool.TryParse(forcedString, out bool forcedBool))
+                {
+                    forced = forcedBool;
+                }
+            }
+        }
+
         if (addToQueue && !QueueList.IsOpen)
         {
-            code = 403;
-            response = Encoding.Default.GetBytes("{\"message\": \"The queue is closed\"}");
-            goto finalResponse;
+            if (!forced)
+            {
+                code = 403;
+                response = Encoding.Default.GetBytes("{\"message\": \"The queue is closed\"}");
+                goto finalResponse;
+            }
         }
 
         bool trySearch = !int.TryParse(path.Last().Replace("/", string.Empty).ToLower(), NumberStyles.Integer,
