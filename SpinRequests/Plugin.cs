@@ -119,6 +119,18 @@ public partial class Plugin : BaseUnityPlugin
     internal static List<QueueEntry> PlayedMapHistory = [];
     private static void TrackOnStartedPlayingTrack(PlayableTrackDataHandle dataHandle, PlayState[] _)
     {
-        PlayedMapHistory = PlayedMapHistory.Prepend(new QueueEntry(dataHandle.Data)).ToList();
+        QueueEntry newEntry = new(dataHandle.Data);
+        
+        if (PlayedMapHistory.Count > 0)
+        {
+            QueueEntry previousEntry = PlayedMapHistory[0];
+            if (previousEntry.FileReference == newEntry.FileReference)
+            {
+                // same map, don't duplicate it
+                return;
+            }
+        }
+        
+        PlayedMapHistory = PlayedMapHistory.Prepend(newEntry).ToList();
     }
 }
