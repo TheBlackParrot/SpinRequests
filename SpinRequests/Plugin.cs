@@ -96,13 +96,18 @@ public partial class Plugin : BaseUnityPlugin
             
             Version currentVersion = new(MyPluginInfo.PLUGIN_VERSION);
             Version latestVersion = new(releaseVersion.Version);
+#if DEBUG
+            // just so we can see the notifications
+            if(currentVersion != latestVersion)
+#else
             if (currentVersion < latestVersion)
+#endif
             {
                 Log.LogMessage($"{nameof(SpinRequests)} is out of date! (using v{currentVersion}, latest is v{latestVersion})");
                 
                 await Awaitable.MainThreadAsync();
                 NotificationSystemGUI.AddMessage(
-                    $"<b>{nameof(SpinRequests)}</b> has an update available! See the shortcut button in the Mod Settings page to grab the latest update. <alpha=#AA>(v{currentVersion} -> v{latestVersion})", 10f);
+                    $"<b>{nameof(SpinRequests)}</b> has an update available! <alpha=#AA>(v{currentVersion} <alpha=#77>-> <alpha=#AA>v{latestVersion})\n<alpha=#FF><size=67%>See the shortcut button in the Mod Settings page to grab the latest update.", 15f);
             }
             else
             {
