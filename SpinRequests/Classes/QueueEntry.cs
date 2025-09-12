@@ -146,6 +146,97 @@ public class QueueEntry
     }
     public QueueEntry() { }
 
+    private async Task PlayButtonPressed()
+    {
+        await Awaitable.MainThreadAsync();
+                
+        Plugin.Log.LogDebug($"PLAY -- {Title} ({SpinShareKey})");
+
+        if (!AlreadyDownloaded)
+        {
+            WorldMenuGameState? worldMenuGameState = Object.FindAnyObjectByType<WorldMenuGameState>();
+            Transform? levelSelectTransform = worldMenuGameState?.transform.Find("LevelSelect");
+            GameState? levelSelectGameState = levelSelectTransform?.GetComponent<GameState>();
+            if (levelSelectGameState != null)
+            {
+                if (!levelSelectGameState.ShouldBeActive)
+                {
+                    // this navigates the player back to the map selection menu too
+                    XDSelectionListMenu.Instance.ScrollToTrack(PlayerSettingsData.Instance.LastPlayedTrackHandle);
+                }
+            }
+            else
+            {
+                Plugin.Log.LogWarning("uh levelSelectGameState is null?");
+            }
+
+            NotificationSystemGUI.AddMessage($"Downloading map {SpinShareKey}...", 5f);
+            
+            await Plugin.SpinShare.downloadSongAndUnzip(SpinShareKey.ToString(), Plugin.CustomsPath);
+            XDSelectionListMenu.Instance.FireRapidTrackDataChange();
+            
+            NotificationSystemGUI.AddMessage($"Successfully downloaded map {SpinShareKey}!");
+        }
+
+        int attempts = 0;
+        MetadataHandle metadataHandle;
+        
+        keepTrying:
+            try
+            {
+                metadataHandle = XDSelectionListMenu.Instance._sortedTrackList.First(handle =>
+                {
+                    if (string.IsNullOrEmpty(handle.UniqueName))
+                    {
+                        return false;
+                    }
+
+                    string reference = handle.UniqueName;
+                    if (reference.LastIndexOf('_') != -1)
+                    {
+                        reference = reference.Remove(handle.UniqueName.LastIndexOf('_'));
+                    }
+
+                    return FileReference == reference.Replace("CUSTOM_", string.Empty);
+                });
+            }
+            catch (Exception innerException)
+            {
+                if (innerException is not InvalidOperationException)
+                {
+                    throw;
+                }
+                
+                attempts++;
+                if (attempts >= 12)
+                {
+                    Plugin.Log.LogError($"Failed to find map {SpinShareKey}");
+                    throw;
+                }
+                await Task.Delay(250);
+                goto keepTrying;
+            }
+
+#if DEBUG
+        Plugin.Log.LogInfo($"Found map {SpinShareKey} after {attempts} attempts");
+#endif
+        
+        XDSelectionListMenu.Instance.ScrollToTrack(metadataHandle);
+        QueueList.Entries.Remove(this);
+        QueueList.CheckIndicatorDot();
+        QueueList.SavePersistentQueue();
+        SocketApi.Broadcast("Played", this);
+    }
+
+    private void SkipButtonPressed()
+    {
+        Plugin.Log.LogDebug($"SKIP -- {Title} ({SpinShareKey})");
+        QueueList.Entries.Remove(this);
+        QueueList.CheckIndicatorDot();
+        QueueList.SavePersistentQueue();
+        SocketApi.Broadcast("Skipped", this);
+    }
+
     public async Task AddToQueue(bool silent = false)
     {
         // a bunch of UI functions happen here and Unity gets Very Very Angry if we're not on the main thread
@@ -279,84 +370,7 @@ public class QueueEntry
         {
             try
             {
-                await Awaitable.MainThreadAsync();
-                
-                Plugin.Log.LogDebug($"PLAY -- {Title} ({SpinShareKey})");
-
-                if (!AlreadyDownloaded)
-                {
-                    WorldMenuGameState? worldMenuGameState = Object.FindAnyObjectByType<WorldMenuGameState>();
-                    Transform? levelSelectTransform = worldMenuGameState?.transform.Find("LevelSelect");
-                    GameState? levelSelectGameState = levelSelectTransform?.GetComponent<GameState>();
-                    if (levelSelectGameState != null)
-                    {
-                        if (!levelSelectGameState.ShouldBeActive)
-                        {
-                            // this navigates the player back to the map selection menu too
-                            XDSelectionListMenu.Instance.ScrollToTrack(PlayerSettingsData.Instance.LastPlayedTrackHandle);
-                        }
-                    }
-                    else
-                    {
-                        Plugin.Log.LogWarning("uh levelSelectGameState is null?");
-                    }
-
-                    NotificationSystemGUI.AddMessage($"Downloading map {SpinShareKey}...", 5f);
-                    
-                    await Plugin.SpinShare.downloadSongAndUnzip(SpinShareKey.ToString(), Plugin.CustomsPath);
-                    XDSelectionListMenu.Instance.FireRapidTrackDataChange();
-                    
-                    NotificationSystemGUI.AddMessage($"Successfully downloaded map {SpinShareKey}!");
-                }
-
-                int attempts = 0;
-                MetadataHandle metadataHandle;
-                
-                keepTrying:
-                    try
-                    {
-                        metadataHandle = XDSelectionListMenu.Instance._sortedTrackList.First(handle =>
-                        {
-                            if (string.IsNullOrEmpty(handle.UniqueName))
-                            {
-                                return false;
-                            }
-
-                            string reference = handle.UniqueName;
-                            if (reference.LastIndexOf('_') != -1)
-                            {
-                                reference = reference.Remove(handle.UniqueName.LastIndexOf('_'));
-                            }
-
-                            return FileReference == reference.Replace("CUSTOM_", string.Empty);
-                        });
-                    }
-                    catch (Exception innerException)
-                    {
-                        if (innerException is not InvalidOperationException)
-                        {
-                            throw;
-                        }
-                        
-                        attempts++;
-                        if (attempts >= 12)
-                        {
-                            Plugin.Log.LogError($"Failed to find map {SpinShareKey}");
-                            throw;
-                        }
-                        await Task.Delay(250);
-                        goto keepTrying;
-                    }
-
-#if DEBUG
-                Plugin.Log.LogInfo($"Found map {SpinShareKey} after {attempts} attempts");
-#endif
-                
-                XDSelectionListMenu.Instance.ScrollToTrack(metadataHandle);
-                QueueList.Entries.Remove(this);
-                QueueList.CheckIndicatorDot();
-                QueueList.SavePersistentQueue();
-                SocketApi.Broadcast("Played", this);
+                await PlayButtonPressed();
                 Object.DestroyImmediate(entryGroup.GameObject);
             }
             catch (Exception e)
@@ -369,11 +383,7 @@ public class QueueEntry
         
         UIHelper.CreateButton(buttonGroup, "SkipButton", "SpinRequests_SkipButtonText", () =>
         {
-            Plugin.Log.LogDebug($"SKIP -- {Title} ({SpinShareKey})");
-            QueueList.Entries.Remove(this);
-            QueueList.CheckIndicatorDot();
-            QueueList.SavePersistentQueue();
-            SocketApi.Broadcast("Skipped", this);
+            SkipButtonPressed();
             Object.DestroyImmediate(entryGroup.GameObject);
         });
         #endregion
