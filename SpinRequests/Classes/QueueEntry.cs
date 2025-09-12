@@ -151,6 +151,8 @@ public class QueueEntry
         await Awaitable.MainThreadAsync();
                 
         Plugin.Log.LogDebug($"PLAY -- {Title} ({SpinShareKey})");
+        
+        XDSelectionListMenu.Instance.ClearSearch();
 
         if (!AlreadyDownloaded)
         {
