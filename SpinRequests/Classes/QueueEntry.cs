@@ -73,11 +73,13 @@ public class QueueEntry
         SpinShareKey = details.id;
         FileReference = details.fileReference;
         
-        EasyRating = details.easyDifficulty;
-        NormalRating = details.normalDifficulty;
-        HardRating = details.hardDifficulty;
-        ExpertRating = details.expertDifficulty;
-        XDRating = details.XDDifficulty;
+        // just checking to see if details.xxxxDifficulty is null isn't enough, sometimes seems to just show 0 if not present on the API
+        // so we check it with the bool also in the data lol
+        EasyRating = details.hasEasyDifficulty ? details.easyDifficulty : null;
+        NormalRating = details.hasNormalDifficulty ? details.normalDifficulty : null;
+        HardRating = details.hasHardDifficulty ? details.hardDifficulty : null;
+        ExpertRating = details.hasExpertDifficulty ? details.expertDifficulty : null;
+        XDRating = details.hasXDDifficulty ? details.XDDifficulty : null;
         
         // details.uploadDate.stimezone is null (erm), but SpinShare stores time in Europe/Berlin
         // https://github.com/unicode-org/cldr/blob/59dfe3ad9720e304957658bd991df8b0dba3519a/common/supplemental/windowsZones.xml#L307
