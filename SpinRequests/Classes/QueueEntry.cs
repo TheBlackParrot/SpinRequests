@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SpinCore.UI;
@@ -120,12 +119,28 @@ public class QueueEntry
         FileReference = reference;
         
         ActiveDifficulty = trackData.Difficulty.ToString();
-        EasyRating = trackData.Difficulty == TrackData.DifficultyType.Easy ? trackData.DifficultyRating : null;
-        NormalRating = trackData.Difficulty == TrackData.DifficultyType.Normal ? trackData.DifficultyRating : null;
-        HardRating = trackData.Difficulty == TrackData.DifficultyType.Hard ? trackData.DifficultyRating : null;
-        ExpertRating = trackData.Difficulty == TrackData.DifficultyType.Expert ? trackData.DifficultyRating : null;
-        XDRating = trackData.Difficulty == TrackData.DifficultyType.XD ? trackData.DifficultyRating : null;
-        RemiXDRating = trackData.Difficulty == TrackData.DifficultyType.RemiXD ? trackData.DifficultyRating : null;
+        // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
+        switch (trackData.Difficulty)
+        {
+            case TrackData.DifficultyType.Easy:
+                EasyRating = trackData.DifficultyRating;
+                break;
+            case TrackData.DifficultyType.Normal:
+                NormalRating = trackData.DifficultyRating;
+                break;
+            case TrackData.DifficultyType.Hard:
+                HardRating = trackData.DifficultyRating;
+                break;
+            case TrackData.DifficultyType.Expert:
+                ExpertRating = trackData.DifficultyRating;
+                break;
+            case TrackData.DifficultyType.XD:
+                XDRating = trackData.DifficultyRating;
+                break;
+            case TrackData.DifficultyType.RemiXD:
+                RemiXDRating = trackData.DifficultyRating;
+                break;
+        }
     }
     public QueueEntry() { }
 
