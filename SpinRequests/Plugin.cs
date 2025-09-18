@@ -121,7 +121,7 @@ public partial class Plugin : BaseUnityPlugin
         Track.OnStartedPlayingTrack -= TrackOnStartedPlayingTrack;
     }
 
-    internal static List<QueueEntry> PlayedMapHistory = [];
+    internal static readonly List<QueueEntry> PlayedMapHistory = [];
     private static void TrackOnStartedPlayingTrack(PlayableTrackDataHandle dataHandle, PlayState[] _)
     {
         QueueEntry newEntry = new(dataHandle.Data);
@@ -136,6 +136,6 @@ public partial class Plugin : BaseUnityPlugin
             }
         }
         
-        PlayedMapHistory = PlayedMapHistory.Prepend(newEntry).ToList();
+        PlayedMapHistory.Insert(0, newEntry);
     }
 }
