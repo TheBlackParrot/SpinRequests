@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 using SpinRequests.Classes;
 using SpinRequests.UI;
 using SpinShareLib.Types;
+using JsonException = System.Text.Json.JsonException;
 
 namespace SpinRequests.Services;
 
@@ -179,12 +180,19 @@ internal class HttpApi
         }
         catch (Exception exception)
         {
-            if (exception is TaskCanceledException)
+            switch (exception)
             {
-                code = 504;
-                response = Encoding.Default.GetBytes("{\"message\": \"SpinShare API request timed out\"}");
-                Plugin.Log.LogInfo("Request timed out");
-                goto finalResponse;
+                case TaskCanceledException:
+                    code = 504;
+                    response = Encoding.Default.GetBytes("{\"message\": \"SpinShare API request timed out\"}");
+                    Plugin.Log.LogInfo("Request timed out");
+                    goto finalResponse;
+                    
+                case JsonException:
+                    code = 404;
+                    response = Encoding.Default.GetBytes("{\"message\": \"This map does not exist\"}");
+                    Plugin.Log.LogInfo("Map doesn't exist");
+                    goto finalResponse;
             }
 
             code = 500;
