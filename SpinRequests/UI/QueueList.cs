@@ -100,12 +100,7 @@ internal static class QueueList
     internal static void CheckIndicatorDot()
     {
         GameObject? button = GameObject.Find("Dot Selector Button QueueListPanel");
-        if (button == null)
-        {
-            return;
-        }
-        
-        Transform? indicatorDotTransform = button.transform.Find("IconContainer/IndicatorDot");
+        Transform? indicatorDotTransform = button?.transform.Find("IconContainer/IndicatorDot");
         indicatorDotTransform?.gameObject.SetActive(Entries.Concat(BufferedList).Any());
     }
 }
