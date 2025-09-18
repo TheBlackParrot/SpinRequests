@@ -12,6 +12,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
+using XDMenuPlay;
 using Object = UnityEngine.Object;
 
 namespace SpinRequests.Classes;
@@ -153,6 +154,13 @@ public class QueueEntry
         Plugin.Log.LogDebug($"PLAY -- {Title} ({SpinShareKey})");
         
         XDSelectionListMenu.Instance.ClearSearch();
+        // holy moly
+        Object
+            .FindObjectsByType<XDSelectionListItemDisplay_TabPanel>(FindObjectsInactive.Include,
+                FindObjectsSortMode.None)
+            .First(x => x.gameObject.name == "TabPanel_TrackFilter(Clone)").transform
+            .Find("Scroll List Tab Prefab/Scroll View/Viewport/Content/FilterSettingsPopout")
+            .GetComponent<XDOptionValueResetGroup>().SetToDefaults();
 
         if (!AlreadyDownloaded)
         {
