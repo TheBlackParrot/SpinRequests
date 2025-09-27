@@ -18,7 +18,11 @@ internal static class QueueList
     internal static readonly List<QueueEntry> BufferedList = [];
     internal static readonly List<QueueEntry> Entries = [];
     
+#if DEBUG
+    internal static bool IsOpen = true;
+#else
     internal static bool IsOpen;
+#endif
     
     private static string PersistentQueueFilename => Path.Combine(Plugin.DataPath, "queue.json");
 
