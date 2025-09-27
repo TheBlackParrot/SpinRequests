@@ -153,10 +153,8 @@ public class QueueEntry
                 
         Plugin.Log.LogDebug($"PLAY -- {Title} ({SpinShareKey})");
         
-        Plugin.Log.LogInfo("1");
         XDSelectionListMenu.Instance.ClearSearch();
-        Plugin.Log.LogInfo("2");
-        // holy moly
+        
         XDSelectionListItemDisplay_TabPanel[] filtersTabPanel = Object.FindObjectsByType<XDSelectionListItemDisplay_TabPanel>(FindObjectsInactive.Include, FindObjectsSortMode.None) ?? [];
         if (filtersTabPanel.Length <= 0)
         {
@@ -164,13 +162,18 @@ public class QueueEntry
         }
         else
         {
+            // ReSharper disable once SimplifyLinqExpressionUseAll
+            if (!filtersTabPanel.Any(x => x.gameObject.name == "TabPanel_TrackFilter(Clone)"))
+            {
+                Object.Instantiate(GameObject.Find("TabPanel_TrackFilter"),
+                    GameObject.Find("TabPanelDisplayList").transform);
+            }
+            
             filtersTabPanel
                 .First(x => x.gameObject.name == "TabPanel_TrackFilter(Clone)").transform
                 .Find("Scroll List Tab Prefab/Scroll View/Viewport/Content/FilterSettingsPopout")
                 .GetComponent<XDOptionValueResetGroup>().SetToDefaults();
         }
-        
-        Plugin.Log.LogInfo("3");
 
         if (!AlreadyDownloaded)
         {
@@ -200,21 +203,17 @@ public class QueueEntry
 
         int attempts = 0;
         MetadataHandle metadataHandle;
-        Plugin.Log.LogInfo("4");
         
         keepTrying:
             try
             {
-                Plugin.Log.LogInfo("5");
                 metadataHandle = XDSelectionListMenu.Instance._sortedTrackList.First(handle =>
                 {
-                    Plugin.Log.LogInfo("6");
                     if (string.IsNullOrEmpty(handle.UniqueName))
                     {
                         return false;
                     }
-
-                    Plugin.Log.LogInfo("7");
+                    
                     string reference = handle.UniqueName;
                     if (reference.LastIndexOf('_') != -1)
                     {
@@ -245,7 +244,6 @@ public class QueueEntry
         Plugin.Log.LogInfo($"Found map {SpinShareKey} after {attempts} attempts");
 #endif
         
-        Plugin.Log.LogInfo("8");
         XDSelectionListMenu.Instance.ScrollToTrack(metadataHandle);
         QueueList.Entries.Remove(this);
         QueueList.CheckIndicatorDot();
