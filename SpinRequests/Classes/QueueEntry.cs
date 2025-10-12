@@ -182,12 +182,24 @@ public class QueueEntry
         }
         else
         {
-            // ReSharper disable once SimplifyLinqExpressionUseAll
+            // ReSharper disable SimplifyLinqExpressionUseAll
             if (!filtersTabPanel.Any(x => x.gameObject.name == "TabPanel_TrackFilter(Clone)"))
             {
                 GameObject.Find("Dot Selector Button TrackFilter")?.GetComponent<XDNavigableButton>().onClick.Invoke();
+                await Awaitable.EndOfFrameAsync();
                 GameObject.Find("Dot Selector Button QueueListPanel")?.GetComponent<XDNavigableButton>().onClick.Invoke(); // i... sigh
+                await Awaitable.EndOfFrameAsync();
             }
+            
+            while (!filtersTabPanel.Any(x => x.gameObject.name == "TabPanel_TrackFilter(Clone)"))
+            {
+                filtersTabPanel =
+                    Object.FindObjectsByType<XDSelectionListItemDisplay_TabPanel>(FindObjectsInactive.Include, FindObjectsSortMode.None) ?? [];
+                await Awaitable.EndOfFrameAsync();
+                
+                Plugin.Log.LogInfo("checking...");
+            }
+            // ReSharper restore SimplifyLinqExpressionUseAll
             
             filtersTabPanel
                 .First(x => x.gameObject.name == "TabPanel_TrackFilter(Clone)").transform
@@ -214,6 +226,17 @@ public class QueueEntry
             }
 
             NotificationSystemGUI.AddMessage($"Downloading map {SpinShareKey}...", 5f);
+
+            string srtbFilename = Path.Combine(Plugin.CustomsPath, $"{FileReference}.srtb");
+            string artFilename = Path.Combine(Plugin.CustomsPath, $"AlbumArt/{FileReference}.png");
+            if (File.Exists(srtbFilename))
+            {
+                File.Delete(srtbFilename);
+            }
+            if (File.Exists(artFilename))
+            {
+                File.Delete(artFilename);
+            }
             
             await Plugin.SpinShare.downloadSongAndUnzip(SpinShareKey.ToString(), Plugin.CustomsPath);
             XDSelectionListMenu.Instance.FireRapidTrackDataChange();
