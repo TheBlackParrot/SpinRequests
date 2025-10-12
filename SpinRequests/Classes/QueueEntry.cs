@@ -60,6 +60,7 @@ public class QueueEntry
     public bool AlreadyDownloaded => FileReference == null || File.Exists(Path.Combine(Plugin.CustomsPath, $"{FileReference}.srtb"));
     public string? FileReference { get; set; } = string.Empty;
     public long? UploadTime { get; set; }
+    public long? UpdateTime { get; set; }
     public bool HasPlayed => FileReference != null && Plugin.PlayedMapHistory.Any(x => x.FileReference == FileReference);
     public bool InQueue => FileReference != null && QueueList.Entries.Concat(QueueList.BufferedList).Any(x => x.FileReference == FileReference);
     // ReSharper restore UnusedAutoPropertyAccessor.Global
@@ -84,8 +85,13 @@ public class QueueEntry
         
         // details.uploadDate.stimezone is null (erm), but SpinShare stores time in Europe/Berlin
         // https://github.com/unicode-org/cldr/blob/59dfe3ad9720e304957658bd991df8b0dba3519a/common/supplemental/windowsZones.xml#L307
-        DateTime localTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(details.uploadDate.date, "W. Europe Standard Time", TimeZoneInfo.Local.Id);
-        UploadTime = DateTimeOffset.FromFileTime(localTime.ToFileTime()).ToUnixTimeSeconds();
+        DateTime uploadDateTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(details.uploadDate.date, "W. Europe Standard Time", TimeZoneInfo.Local.Id);
+        UploadTime = DateTimeOffset.FromFileTime(uploadDateTime.ToFileTime()).ToUnixTimeSeconds();
+        if (details.updateDate != null)
+        {
+            DateTime updateDateTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(details.updateDate.date, "W. Europe Standard Time", TimeZoneInfo.Local.Id);
+            UpdateTime = DateTimeOffset.FromFileTime(updateDateTime.ToFileTime()).ToUnixTimeSeconds();   
+        }
 
         if (query == null)
         {

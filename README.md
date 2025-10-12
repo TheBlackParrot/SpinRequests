@@ -85,6 +85,7 @@ All events follow the same data structure:
   "AlreadyDownloaded": <boolean>,
   "FileReference": <string (nullable)> (filename of the map data),
   "UploadTime": <integer (nullable)>,
+  "UpdateTime": <integer (nullable)>,
   "HasPlayed": <boolean>,
   "InQueue": <boolean>
 }
