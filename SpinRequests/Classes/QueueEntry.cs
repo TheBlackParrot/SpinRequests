@@ -209,26 +209,22 @@ public class QueueEntry
             long unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             if (File.Exists(srtbFilename))
             {
-                File.Move(srtbFilename, Path.Combine(Plugin.CustomsPath, $"{FileReference}.old_${unixTimestamp}.srtb"));
+                File.Move(srtbFilename, Path.Combine(Plugin.CustomsPath, $"{FileReference}.old_{unixTimestamp}.srtb"));
             }
             if (File.Exists(artFilename))
             {
-                File.Move(artFilename, Path.Combine(Plugin.CustomsPath, $"AlbumArt/{FileReference}.old_${unixTimestamp}.png"));
+                File.Move(artFilename, Path.Combine(Plugin.CustomsPath, $"AlbumArt/{FileReference}.old_{unixTimestamp}.png"));
             }
 
-            if (!await Plugin.SpinShare.downloadSongAndUnzip(SpinShareKey.ToString(), Plugin.CustomsPath))
+            if (await Plugin.SpinShare.downloadSongAndUnzip(SpinShareKey.ToString(), Plugin.CustomsPath))
             {
-                _playButton!.Transform.GetComponent<XDNavigable>().forceExpanded = true;
-                _playButton!.Transform.GetComponent<XDNavigable>().navigable = true;
-                _playButton!.Transform.GetComponent<XDNavigableButton>().interactable = true;
-                _playButton!.TextTranslationKey = "SpinRequests_PlayButtonText";
+                // to explain the weird flow decision here, and why the success message sometimes never shows:
+                // there's some weird exception being thrown in downloadSongAndUnzip and since it's not re-throwing it, i've got no idea what's going wrong
+                // but it *does* successfully download anyways. so idk
                 
-                NotificationSystemGUI.AddMessage($"Failed downloading map {SpinShareKey} (wuh oh)", 5f);
-                throw new Exception("Downloading map failed");
+                NotificationSystemGUI.AddMessage($"Successfully downloaded map {SpinShareKey}!");
             }
             XDSelectionListMenu.Instance.FireRapidTrackDataChange();
-            
-            NotificationSystemGUI.AddMessage($"Successfully downloaded map {SpinShareKey}!");
         }
 
         int attempts = 0;
@@ -257,13 +253,14 @@ public class QueueEntry
             {
                 if (innerException is not InvalidOperationException)
                 {
+                    FailedDownloadingMap($"Failed downloading map {SpinShareKey} (wuh oh)");
                     throw;
                 }
                 
                 attempts++;
                 if (attempts >= 12)
                 {
-                    Plugin.Log.LogError($"Failed to find map {SpinShareKey}");
+                    FailedDownloadingMap($"Failed to find map {SpinShareKey}");
                     throw;
                 }
                 await Task.Delay(250);
@@ -279,6 +276,19 @@ public class QueueEntry
         QueueList.CheckIndicatorDot();
         QueueList.SavePersistentQueue();
         SocketApi.Broadcast("Played", this);
+    }
+
+    private void FailedDownloadingMap(string? message = null)
+    {
+        _playButton!.Transform.GetComponent<XDNavigable>().forceExpanded = true;
+        _playButton!.Transform.GetComponent<XDNavigable>().navigable = true;
+        _playButton!.Transform.GetComponent<XDNavigableButton>().interactable = true;
+        _playButton!.TextTranslationKey = "SpinRequests_PlayButtonText";
+
+        if (message != null)
+        {
+            NotificationSystemGUI.AddMessage(message, 5f);
+        }
     }
 
     private void SkipButtonPressed()
