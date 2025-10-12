@@ -78,6 +78,7 @@ public class QueueEntry
     public long? UpdateTime => UpdateDateTime == null ? null : DateTimeOffset.FromFileTime(UpdateDateTime.Value.ToFileTime()).ToUnixTimeSeconds();
     public bool HasPlayed => FileReference != null && Plugin.PlayedMapHistory.Any(x => x.FileReference == FileReference);
     public bool InQueue => FileReference != null && QueueList.Entries.Concat(QueueList.BufferedList).Any(x => x.FileReference == FileReference);
+    [JsonIgnore] private CustomButton? _playButton;
     // ReSharper restore UnusedAutoPropertyAccessor.Global
     // ReSharper restore MemberCanBePrivate.Global
     
@@ -226,6 +227,11 @@ public class QueueEntry
             }
 
             NotificationSystemGUI.AddMessage($"Downloading map {SpinShareKey}...", 5f);
+            
+            _playButton!.Transform.GetComponent<XDNavigable>().forceExpanded = false;
+            _playButton!.Transform.GetComponent<XDNavigable>().navigable = false;
+            _playButton!.Transform.GetComponent<XDNavigableButton>().interactable = false;
+            _playButton!.TextTranslationKey = "SpinRequests_PlayButtonTextDownloading";
 
             string srtbFilename = Path.Combine(Plugin.CustomsPath, $"{FileReference}.srtb");
             string artFilename = Path.Combine(Plugin.CustomsPath, $"AlbumArt/{FileReference}.png");
@@ -432,7 +438,7 @@ public class QueueEntry
         CustomGroup buttonGroup = UIHelper.CreateGroup(entryGroup, "QueueEntryButtons", Axis.Horizontal);
         
         // lambda moment smh
-        CustomButton playButton = UIHelper.CreateButton(buttonGroup, "PlayButton", "SpinRequests_PlayButtonText", async void () =>
+        _playButton = UIHelper.CreateButton(buttonGroup, "PlayButton", "SpinRequests_PlayButtonText", async void () =>
         {
             try
             {
@@ -444,8 +450,8 @@ public class QueueEntry
                 Plugin.Log.LogError(e);
             }
         });
-        playButton.Transform.GetComponent<LayoutElement>().preferredWidth = 200;
-        playButton.Transform.GetComponent<XDNavigable>().forceExpanded = true;
+        _playButton.Transform.GetComponent<LayoutElement>().preferredWidth = 200;
+        _playButton.Transform.GetComponent<XDNavigable>().forceExpanded = true;
         
         UIHelper.CreateButton(buttonGroup, "SkipButton", "SpinRequests_SkipButtonText", () =>
         {
