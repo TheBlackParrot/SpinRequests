@@ -185,8 +185,8 @@ public class QueueEntry
             // ReSharper disable once SimplifyLinqExpressionUseAll
             if (!filtersTabPanel.Any(x => x.gameObject.name == "TabPanel_TrackFilter(Clone)"))
             {
-                Object.Instantiate(GameObject.Find("TabPanel_TrackFilter"),
-                    GameObject.Find("TabPanelDisplayList").transform);
+                GameObject.Find("Dot Selector Button TrackFilter")?.GetComponent<XDNavigableButton>().onClick.Invoke();
+                GameObject.Find("Dot Selector Button QueueListPanel")?.GetComponent<XDNavigableButton>().onClick.Invoke(); // i... sigh
             }
             
             filtersTabPanel
