@@ -57,10 +57,25 @@ public class QueueEntry
             {"XD", XDRating},
         };
     }
-    public bool AlreadyDownloaded => FileReference == null || File.Exists(Path.Combine(Plugin.CustomsPath, $"{FileReference}.srtb"));
+    public bool AlreadyDownloaded
+    {
+        get
+        {
+            string path = Path.Combine(Plugin.CustomsPath, $"{FileReference}.srtb");
+            
+            if (FileReference == null || !File.Exists(path))
+            {
+                return false;
+            }
+
+            return UpdateDateTime == null || File.GetLastWriteTime(path) >= UpdateDateTime;
+        }
+    }
+
     public string? FileReference { get; set; } = string.Empty;
     public long? UploadTime { get; set; }
-    public long? UpdateTime { get; set; }
+    [JsonIgnore] private DateTime? UpdateDateTime { get; set; }
+    public long? UpdateTime => UpdateDateTime == null ? null : DateTimeOffset.FromFileTime(UpdateDateTime.Value.ToFileTime()).ToUnixTimeSeconds();
     public bool HasPlayed => FileReference != null && Plugin.PlayedMapHistory.Any(x => x.FileReference == FileReference);
     public bool InQueue => FileReference != null && QueueList.Entries.Concat(QueueList.BufferedList).Any(x => x.FileReference == FileReference);
     // ReSharper restore UnusedAutoPropertyAccessor.Global
@@ -89,8 +104,7 @@ public class QueueEntry
         UploadTime = DateTimeOffset.FromFileTime(uploadDateTime.ToFileTime()).ToUnixTimeSeconds();
         if (details.updateDate != null)
         {
-            DateTime updateDateTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(details.updateDate.date, "W. Europe Standard Time", TimeZoneInfo.Local.Id);
-            UpdateTime = DateTimeOffset.FromFileTime(updateDateTime.ToFileTime()).ToUnixTimeSeconds();   
+            UpdateDateTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(details.updateDate.date, "W. Europe Standard Time", TimeZoneInfo.Local.Id);
         }
 
         if (query == null)
