@@ -12,7 +12,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
-using XDMenuPlay;
 using Object = UnityEngine.Object;
 
 namespace SpinRequests.Classes;
