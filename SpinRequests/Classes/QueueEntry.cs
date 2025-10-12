@@ -209,11 +209,27 @@ public class QueueEntry
             long unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             if (File.Exists(srtbFilename))
             {
-                File.Move(srtbFilename, Path.Combine(Plugin.CustomsPath, $"{FileReference}.old_{unixTimestamp}.srtb"));
+                if (Plugin.DeleteOldMapFiles.Value)
+                {
+                    File.Delete(srtbFilename);
+                }
+                else
+                {
+                    File.Move(srtbFilename,
+                        Path.Combine(Plugin.CustomsPath, $"{FileReference}.old_{unixTimestamp}.srtb"));
+                }
             }
             if (File.Exists(artFilename))
             {
-                File.Move(artFilename, Path.Combine(Plugin.CustomsPath, $"AlbumArt/{FileReference}.old_{unixTimestamp}.png"));
+                if (Plugin.DeleteOldMapFiles.Value)
+                {
+                    File.Delete(artFilename);
+                }
+                else
+                {
+                    File.Move(artFilename,
+                        Path.Combine(Plugin.CustomsPath, $"AlbumArt/{FileReference}.old_{unixTimestamp}.png"));
+                }
             }
 
             if (await Plugin.SpinShare.downloadSongAndUnzip(SpinShareKey.ToString(), Plugin.CustomsPath))

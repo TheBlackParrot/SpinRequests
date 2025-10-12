@@ -14,6 +14,7 @@ public partial class Plugin
     internal static ConfigEntry<string> SocketAddress = null!;
     
     internal static ConfigEntry<bool> EnableQueueNotifications = null!;
+    internal static ConfigEntry<bool> DeleteOldMapFiles = null!;
 
     private void RegisterConfigEntries()
     {
@@ -31,6 +32,8 @@ public partial class Plugin
 
         EnableQueueNotifications = Config.Bind("General", "EnableQueueNotifications", true,
             "Show notifications for maps added to the queue");
+        DeleteOldMapFiles = Config.Bind("General", "DeleteOldMapFiles", false,
+            "Delete old map files when downloading updated maps");
     }
 
     private static void CreateModPage()
@@ -41,6 +44,7 @@ public partial class Plugin
         UIHelper.RegisterMenuInModSettingsRoot("SpinRequests_ModName", rootModPage);
         
         TranslationHelper.AddTranslation("SpinRequests_EnableQueueNotifications", "Enable queue notifications");
+        TranslationHelper.AddTranslation("SpinRequests_DeleteOldMapFiles", "Delete old map files when downloading updated maps");
     }
 
     private static void RootModPageOnOnPageLoad(Transform rootModPageTransform)
@@ -55,6 +59,16 @@ public partial class Plugin
             "SpinRequests_EnableQueueNotifications", EnableQueueNotifications.Value, value =>
             {
                 EnableQueueNotifications.Value = value;
+            });
+        #endregion
+        
+        #region DeleteOldMapFiles
+        CustomGroup deleteOldMapFilesGroup = UIHelper.CreateGroup(modGroup, "DeleteOldMapFilesGroup");
+        deleteOldMapFilesGroup.LayoutDirection = Axis.Horizontal;
+        UIHelper.CreateSmallToggle(deleteOldMapFilesGroup, nameof(DeleteOldMapFiles),
+            "SpinRequests_DeleteOldMapFiles", DeleteOldMapFiles.Value, value =>
+            {
+                DeleteOldMapFiles.Value = value;
             });
         #endregion
 
