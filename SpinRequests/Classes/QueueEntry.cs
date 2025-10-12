@@ -175,38 +175,10 @@ public class QueueEntry
         Plugin.Log.LogDebug($"PLAY -- {Title} ({SpinShareKey})");
         
         XDSelectionListMenu.Instance.ClearSearch();
-        
-        XDSelectionListItemDisplay_TabPanel[] filtersTabPanel = Object.FindObjectsByType<XDSelectionListItemDisplay_TabPanel>(FindObjectsInactive.Include, FindObjectsSortMode.None) ?? [];
-        if (filtersTabPanel.Length <= 0)
-        {
-            Plugin.Log.LogInfo("erm... filters?????");
-        }
-        else
-        {
-            // ReSharper disable SimplifyLinqExpressionUseAll
-            if (!filtersTabPanel.Any(x => x.gameObject.name == "TabPanel_TrackFilter(Clone)"))
-            {
-                GameObject.Find("Dot Selector Button TrackFilter")?.GetComponent<XDNavigableButton>().onClick.Invoke();
-                await Awaitable.EndOfFrameAsync();
-                GameObject.Find("Dot Selector Button QueueListPanel")?.GetComponent<XDNavigableButton>().onClick.Invoke(); // i... sigh
-                await Awaitable.EndOfFrameAsync();
-            }
-            
-            while (!filtersTabPanel.Any(x => x.gameObject.name == "TabPanel_TrackFilter(Clone)"))
-            {
-                filtersTabPanel =
-                    Object.FindObjectsByType<XDSelectionListItemDisplay_TabPanel>(FindObjectsInactive.Include, FindObjectsSortMode.None) ?? [];
-                await Awaitable.EndOfFrameAsync();
-                
-                Plugin.Log.LogInfo("checking...");
-            }
-            // ReSharper restore SimplifyLinqExpressionUseAll
-            
-            filtersTabPanel
-                .First(x => x.gameObject.name == "TabPanel_TrackFilter(Clone)").transform
-                .Find("Scroll List Tab Prefab/Scroll View/Viewport/Content/FilterSettingsPopout")
-                .GetComponent<XDOptionValueResetGroup>().SetToDefaults();
-        }
+        PlayerSettingsData.Instance.FilterCustomTracks.ResetData();
+        PlayerSettingsData.Instance.FilterMaximumDifficulty.ResetData();
+        PlayerSettingsData.Instance.FilterMinimumDifficulty.ResetData();
+        PlayerSettingsData.Instance.ShowOnlyFavouritesArcade.ResetData();
 
         if (!AlreadyDownloaded)
         {
@@ -243,8 +215,17 @@ public class QueueEntry
             {
                 File.Delete(artFilename);
             }
-            
-            await Plugin.SpinShare.downloadSongAndUnzip(SpinShareKey.ToString(), Plugin.CustomsPath);
+
+            if (!await Plugin.SpinShare.downloadSongAndUnzip(SpinShareKey.ToString(), Plugin.CustomsPath))
+            {
+                _playButton!.Transform.GetComponent<XDNavigable>().forceExpanded = true;
+                _playButton!.Transform.GetComponent<XDNavigable>().navigable = true;
+                _playButton!.Transform.GetComponent<XDNavigableButton>().interactable = true;
+                _playButton!.TextTranslationKey = "SpinRequests_PlayButtonText";
+                
+                NotificationSystemGUI.AddMessage($"Failed downloading map {SpinShareKey} (wuh oh)", 5f);
+                throw new Exception("Downloading map failed");
+            }
             XDSelectionListMenu.Instance.FireRapidTrackDataChange();
             
             NotificationSystemGUI.AddMessage($"Successfully downloaded map {SpinShareKey}!");
