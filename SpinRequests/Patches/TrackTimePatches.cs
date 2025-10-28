@@ -32,8 +32,9 @@ internal class TrackTimePatches
 #if DEBUG
             Plugin.Log.LogInfo("set played on map");
 #endif
-            Plugin.PlayedMapHistory[0].HasPlayed = true;
             _hasSetPlayed = true;
+            
+            Plugin.AddToCrossedThresholdList(Plugin.PlayedMapHistory[0].FileReference);
         }
     }
 }

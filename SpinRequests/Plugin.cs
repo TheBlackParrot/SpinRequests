@@ -138,6 +138,7 @@ public partial class Plugin : BaseUnityPlugin
     }
 
     internal static readonly List<QueueEntry> PlayedMapHistory = [];
+    internal static readonly List<string?> MapsThatCrossedPlayedThreshold = [];
     private static void AddToPlayedMapHistory(PlayableTrackDataHandle dataHandle)
     {
         QueueEntry newEntry = new(dataHandle.Data);
@@ -153,5 +154,18 @@ public partial class Plugin : BaseUnityPlugin
         }
         
         PlayedMapHistory.Insert(0, newEntry);
+    }
+
+    internal static void AddToCrossedThresholdList(string? fileReference)
+    {
+        if (fileReference == null)
+        {
+            return;
+        }
+        
+        if (!MapsThatCrossedPlayedThreshold.Contains(fileReference))
+        {
+            MapsThatCrossedPlayedThreshold.Add(fileReference);
+        }
     }
 }
