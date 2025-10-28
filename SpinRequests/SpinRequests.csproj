@@ -45,7 +45,7 @@
         </PackageReference>
         <PackageReference Include="BepInEx.Core" Version="5.*"/>
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*"/>
-        <PackageReference Include="UnityEngine.Modules" Version="6000.0.37" IncludeAssets="compile"/>
+        <PackageReference Include="UnityEngine.Modules" Version="6000.2.7" IncludeAssets="compile"/>
     </ItemGroup>
 
     <ItemGroup>
