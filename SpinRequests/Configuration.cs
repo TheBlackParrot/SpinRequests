@@ -1,4 +1,5 @@
-﻿using BepInEx.Configuration;
+﻿using System;
+using BepInEx.Configuration;
 using SpinCore.Translation;
 using SpinCore.UI;
 using UnityEngine;
@@ -15,6 +16,7 @@ public partial class Plugin
     
     internal static ConfigEntry<bool> EnableQueueNotifications = null!;
     internal static ConfigEntry<bool> DeleteOldMapFiles = null!;
+    internal static ConfigEntry<int> ConsiderPlayedAfterThisPercentage = null!;
 
     private void RegisterConfigEntries()
     {
@@ -34,6 +36,8 @@ public partial class Plugin
             "Show notifications for maps added to the queue");
         DeleteOldMapFiles = Config.Bind("General", "DeleteOldMapFiles", false,
             "Delete old map files when downloading updated maps");
+        ConsiderPlayedAfterThisPercentage = Config.Bind("General", "ConsiderPlayedAfterThisPercentage", 0,
+            "How much of the chart must be played before it's considered an already played chart");
     }
 
     private static void CreateModPage()
@@ -70,6 +74,22 @@ public partial class Plugin
             {
                 DeleteOldMapFiles.Value = value;
             });
+        #endregion
+        
+        #region ConsiderPlayedAfterThisPercentage
+        CustomGroup considerPlayedGroup = UIHelper.CreateGroup(modGroup, "ConsiderPlayedGroup");
+        considerPlayedGroup.LayoutDirection = Axis.Horizontal;
+        UIHelper.CreateLabel(considerPlayedGroup, "ConsiderPlayedLabel", "SpinRequests_ConsiderPlayedAfterThisPercentage");
+        CustomInputField considerPlayedInput = UIHelper.CreateInputField(considerPlayedGroup, "ConsiderPlayedInput", (_, newValue) =>
+        {
+            if (!int.TryParse(newValue, out int value))
+            {
+                return;
+            }
+            
+            ConsiderPlayedAfterThisPercentage.Value = Math.Min(Math.Max(0, value), 100);
+        });
+        considerPlayedInput.InputField.SetText(ConsiderPlayedAfterThisPercentage.Value.ToString());
         #endregion
 
         UIHelper.CreateButton(modGroup, "OpenSpinRequestsRepositoryButton", "SpinRequests_GitHubButtonText", () =>

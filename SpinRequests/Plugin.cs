@@ -5,9 +5,11 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using BepInEx;
 using BepInEx.Logging;
+using HarmonyLib;
 using Newtonsoft.Json;
 using SpinCore.Translation;
 using SpinRequests.Classes;
+using SpinRequests.Patches;
 using SpinRequests.Services;
 using SpinRequests.UI;
 using SpinShareLib;
@@ -20,6 +22,8 @@ namespace SpinRequests;
 public partial class Plugin : BaseUnityPlugin
 {
     internal static ManualLogSource Log = null!;
+    private static readonly Harmony HarmonyInstance = new(MyPluginInfo.PLUGIN_GUID);
+    
     internal static string CustomsPath => CustomAssetLoadingHelper.CUSTOM_DATA_PATH;
     internal static string DataPath => Path.Combine(Paths.ConfigPath, "SpinRequests");
     internal static readonly SSAPI SpinShare = new();
@@ -49,6 +53,7 @@ public partial class Plugin : BaseUnityPlugin
         TranslationHelper.AddTranslation("SpinRequests_SkipButtonText", "Skip");
         TranslationHelper.AddTranslation("SpinRequests_AllowRequestsText", "Allow requests");
         TranslationHelper.AddTranslation("SpinRequests_GitHubButtonText", "SpinRequests Releases (GitHub)");
+        TranslationHelper.AddTranslation("SpinRequests_ConsiderPlayedAfterThisPercentage", "Consider played after % of chart");
 
         if (!Directory.Exists(DataPath))
         {
@@ -63,6 +68,8 @@ public partial class Plugin : BaseUnityPlugin
         QueueList.CreateQueueListPanel();
         Track.OnStartedPlayingTrack += TrackOnStartedPlayingTrack;
         MainCamera.OnCurrentCameraChanged += MainCameraOnCurrentCameraChanged;
+        
+        HarmonyInstance.PatchAll();
     }
 
     private static void MainCameraOnCurrentCameraChanged(Camera _)
@@ -119,10 +126,19 @@ public partial class Plugin : BaseUnityPlugin
     private void OnDisable()
     {
         Track.OnStartedPlayingTrack -= TrackOnStartedPlayingTrack;
+        HarmonyInstance.UnpatchSelf();
+    }
+
+    private static void TrackOnStartedPlayingTrack(PlayableTrackDataHandle dataHandle, PlayState[] _)
+    {
+        TrackTimePatches._hasSetPlayed = false;
+        TrackTimePatches._neededTrackTime = dataHandle.Data.SoundEndTime * (ConsiderPlayedAfterThisPercentage.Value / 100f);
+        
+        AddToPlayedMapHistory(dataHandle);
     }
 
     internal static readonly List<QueueEntry> PlayedMapHistory = [];
-    private static void TrackOnStartedPlayingTrack(PlayableTrackDataHandle dataHandle, PlayState[] _)
+    private static void AddToPlayedMapHistory(PlayableTrackDataHandle dataHandle)
     {
         QueueEntry newEntry = new(dataHandle.Data);
         

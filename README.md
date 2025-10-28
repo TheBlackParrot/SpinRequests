@@ -1,8 +1,6 @@
 # SpinRequests
 An in-game map request manager for Spin Rhythm XD that abstracts out functions to an HTTP GET API.
 
-Very barebones for now, but I'll expand it out some over time.
-
 Any streaming bot you use (e.g. Streamer.bot, Firebot, MixItUp, etc.) now has request queue functionality -- so long as it supports making HTTP requests (at the minimum).
 
 ![Screenshot of SpinRequests being used in-game](Assets/screenshot.png)

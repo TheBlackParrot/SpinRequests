@@ -75,7 +75,7 @@ public class QueueEntry
     public long? UploadTime { get; set; }
     [JsonIgnore] private DateTime? UpdateDateTime { get; set; }
     public long? UpdateTime => UpdateDateTime == null ? null : DateTimeOffset.FromFileTime(UpdateDateTime.Value.ToFileTime()).ToUnixTimeSeconds();
-    public bool HasPlayed => FileReference != null && Plugin.PlayedMapHistory.Any(x => x.FileReference == FileReference);
+    public bool HasPlayed { get; set; } = false;
     public bool InQueue => FileReference != null && QueueList.Entries.Concat(QueueList.BufferedList).Any(x => x.FileReference == FileReference);
     [JsonIgnore] private CustomButton? _playButton;
     // ReSharper restore UnusedAutoPropertyAccessor.Global
