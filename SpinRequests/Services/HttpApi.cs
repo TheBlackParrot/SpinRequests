@@ -255,8 +255,12 @@ internal class HttpApi
             }
         }
 
-        List<QueueEntry> output = Plugin.PlayedMapHistory.Where(x => !onlyPlayed || x.HasPlayed).ToList()
-            .GetRange(0, limit > 0 ? limit : Plugin.PlayedMapHistory.Count);
+        List<QueueEntry> output = Plugin.PlayedMapHistory.Where(x => !onlyPlayed || x.HasPlayed).ToList();
+        limit = Math.Max(Math.Min(limit, output.Count), 0);
+        if (limit > 0)
+        { 
+            output = output.GetRange(0, limit);   
+        }
         
         return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(output));
     }
