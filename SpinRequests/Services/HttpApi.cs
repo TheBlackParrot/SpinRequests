@@ -241,15 +241,22 @@ internal class HttpApi
     private static byte[] GetSessionHistory(Dictionary<string, string>? query = null)
     {
         int limit = 0;
+        bool onlyPlayed = false;
         if (query != null)
         {
             if (query.TryGetValue("limit", out string? limitStr))
             {
                 int.TryParse(limitStr, out limit);
             }
+
+            if (query.TryGetValue("onlyPlayed", out string? onlyPlayedStr))
+            {
+                bool.TryParse(onlyPlayedStr, out onlyPlayed);
+            }
         }
-        
-        List<QueueEntry> output = Plugin.PlayedMapHistory.GetRange(0, limit > 0 ? limit : Plugin.PlayedMapHistory.Count);
+
+        List<QueueEntry> output = Plugin.PlayedMapHistory.Where(x => !onlyPlayed || x.HasPlayed).ToList()
+            .GetRange(0, limit > 0 ? limit : Plugin.PlayedMapHistory.Count);
         
         return Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(output));
     }
