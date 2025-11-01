@@ -27,6 +27,9 @@ public partial class Plugin : BaseUnityPlugin
     internal static string CustomsPath => CustomAssetLoadingHelper.CUSTOM_DATA_PATH;
     internal static string DataPath => Path.Combine(Paths.ConfigPath, "SpinRequests");
     internal static readonly SSAPI SpinShare = new();
+    
+    private static readonly string SessionPlayHistoryPath = Path.Combine(DataPath, "sessionPlayHistory.json");
+    private static readonly string SessionThresholdHistoryPath = Path.Combine(DataPath, "sessionThresholdHistory.json");
 
     private void Awake()
     {
@@ -54,11 +57,14 @@ public partial class Plugin : BaseUnityPlugin
         TranslationHelper.AddTranslation("SpinRequests_AllowRequestsText", "Allow requests");
         TranslationHelper.AddTranslation("SpinRequests_GitHubButtonText", "SpinRequests Releases (GitHub)");
         TranslationHelper.AddTranslation("SpinRequests_ConsiderPlayedAfterThisPercentage", "Consider played after % of chart");
+        TranslationHelper.AddTranslation("SpinRequests_SessionPersistenceLength", "Hours to remember session history");
 
         if (!Directory.Exists(DataPath))
         {
             Directory.CreateDirectory(DataPath);
         }
+
+        LoadPreviousSessionData();
         
         Logger.LogInfo("Plugin loaded");
     }
@@ -137,8 +143,46 @@ public partial class Plugin : BaseUnityPlugin
         AddToPlayedMapHistory(dataHandle);
     }
 
-    internal static readonly List<QueueEntry> PlayedMapHistory = [];
-    internal static readonly List<string?> MapsThatCrossedPlayedThreshold = [];
+    internal static List<QueueEntry> PlayedMapHistory = [];
+    internal static List<string?> MapsThatCrossedPlayedThreshold = [];
+    
+    private const int SECONDS_IN_AN_HOUR = 3600;
+    private static void LoadPreviousSessionData()
+    {
+        long currentTimeUtc = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        
+        if (File.Exists(SessionPlayHistoryPath))
+        {
+            long lastWriteTimeUtc = ((DateTimeOffset)File.GetLastWriteTimeUtc(SessionPlayHistoryPath)).ToUnixTimeSeconds();
+            if (currentTimeUtc - lastWriteTimeUtc > SessionPersistenceLength.Value * SECONDS_IN_AN_HOUR)
+            {
+                Log.LogInfo($"Previous session's play history is more than {SessionPersistenceLength.Value} hour(s) old, not loading it");
+            }
+            else
+            {
+                Log.LogInfo("Loading previous session's play history...");
+                PlayedMapHistory =
+                    JsonConvert.DeserializeObject<List<QueueEntry>>(File.ReadAllText(SessionPlayHistoryPath)) ?? [];
+            }
+        }
+        
+        // ReSharper disable once InvertIf
+        if (File.Exists(SessionThresholdHistoryPath))
+        {
+            long lastWriteTimeUtc = ((DateTimeOffset)File.GetLastWriteTimeUtc(SessionThresholdHistoryPath)).ToUnixTimeSeconds();
+            if (currentTimeUtc - lastWriteTimeUtc > SessionPersistenceLength.Value * SECONDS_IN_AN_HOUR)
+            {
+                Log.LogInfo($"Previous session's threshold history is more than {SessionPersistenceLength.Value} hour(s) old, not loading it");
+            }
+            else
+            {
+                Log.LogInfo("Loading previous session's threshold history...");
+                MapsThatCrossedPlayedThreshold =
+                    JsonConvert.DeserializeObject<List<string?>>(File.ReadAllText(SessionThresholdHistoryPath)) ?? [];
+            }
+        }
+    }
+    
     private static void AddToPlayedMapHistory(PlayableTrackDataHandle dataHandle)
     {
         QueueEntry newEntry = new(dataHandle.Data);
@@ -154,6 +198,7 @@ public partial class Plugin : BaseUnityPlugin
         }
         
         PlayedMapHistory.Insert(0, newEntry);
+        File.WriteAllText(SessionPlayHistoryPath, JsonConvert.SerializeObject(PlayedMapHistory));
     }
 
     internal static void AddToCrossedThresholdList(string? fileReference)
@@ -162,10 +207,13 @@ public partial class Plugin : BaseUnityPlugin
         {
             return;
         }
-        
-        if (!MapsThatCrossedPlayedThreshold.Contains(fileReference))
+
+        if (MapsThatCrossedPlayedThreshold.Contains(fileReference))
         {
-            MapsThatCrossedPlayedThreshold.Add(fileReference);
+            return;
         }
+        
+        MapsThatCrossedPlayedThreshold.Add(fileReference);
+        File.WriteAllText(SessionThresholdHistoryPath, JsonConvert.SerializeObject(MapsThatCrossedPlayedThreshold));
     }
 }
