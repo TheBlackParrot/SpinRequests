@@ -2,14 +2,11 @@
 
 namespace SpinRequests.Patches;
 
-//PlayState.Active.UpdatePlaybackTime();
-//PlayState.Active.SetMusicPlaybackTime();
-
 [HarmonyPatch]
 internal class TrackTimePatches
 {
-    internal static double _neededTrackTime = 0f;
-    internal static bool _hasSetPlayed = false;
+    internal static double NeededTrackTime = 0f;
+    internal static bool HasSetPlayed;
     
     [HarmonyPatch(typeof(PlayState), nameof(PlayState.UpdatePlaybackTime))]
     [HarmonyPostfix]
@@ -21,18 +18,18 @@ internal class TrackTimePatches
             return;
         }
 
-        if (Plugin.PlayedMapHistory.Count == 0 || _hasSetPlayed)
+        if (Plugin.PlayedMapHistory.Count == 0 || HasSetPlayed)
         {
             return;
         }
 
         // ReSharper disable once InvertIf
-        if (__instance.currentTrackTime >= _neededTrackTime && !_hasSetPlayed)
+        if (__instance.currentTrackTime >= NeededTrackTime && !HasSetPlayed)
         {
 #if DEBUG
             Plugin.Log.LogInfo("set played on map");
 #endif
-            _hasSetPlayed = true;
+            HasSetPlayed = true;
             
             Plugin.AddToCrossedThresholdList(Plugin.PlayedMapHistory[0].FileReference);
         }

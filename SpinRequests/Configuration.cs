@@ -3,7 +3,6 @@ using BepInEx.Configuration;
 using SpinCore.Translation;
 using SpinCore.UI;
 using UnityEngine;
-using XDMenuPlay;
 
 namespace SpinRequests;
 
@@ -17,8 +16,8 @@ public partial class Plugin
     
     internal static ConfigEntry<bool> EnableQueueNotifications = null!;
     internal static ConfigEntry<bool> DeleteOldMapFiles = null!;
-    internal static ConfigEntry<int> ConsiderPlayedAfterThisPercentage = null!;
-    internal static ConfigEntry<int> SessionPersistenceLength = null!;
+    private static ConfigEntry<int> _considerPlayedAfterThisPercentage = null!;
+    private static ConfigEntry<int> _sessionPersistenceLength = null!;
 
     private void RegisterConfigEntries()
     {
@@ -38,9 +37,9 @@ public partial class Plugin
             "Show notifications for maps added to the queue");
         DeleteOldMapFiles = Config.Bind("General", "DeleteOldMapFiles", false,
             "Delete old map files when downloading updated maps");
-        ConsiderPlayedAfterThisPercentage = Config.Bind("General", "ConsiderPlayedAfterThisPercentage", 0,
+        _considerPlayedAfterThisPercentage = Config.Bind("General", "ConsiderPlayedAfterThisPercentage", 0,
             "How much of the chart must be played before it's considered an already played chart");
-        SessionPersistenceLength = Config.Bind("Persistence", "SessionPersistenceLength", 0,
+        _sessionPersistenceLength = Config.Bind("Persistence", "SessionPersistenceLength", 0,
             "How many hours between the file write time of the session history and the current time to wait before considering the current session as a new session");
     }
 
@@ -91,9 +90,9 @@ public partial class Plugin
                 return;
             }
             
-            ConsiderPlayedAfterThisPercentage.Value = Math.Min(Math.Max(0, value), 100);
+            _considerPlayedAfterThisPercentage.Value = Math.Min(Math.Max(0, value), 100);
         });
-        considerPlayedInput.InputField.SetText(ConsiderPlayedAfterThisPercentage.Value.ToString());
+        considerPlayedInput.InputField.SetText(_considerPlayedAfterThisPercentage.Value.ToString());
         #endregion
         
         #region SessionPersistenceLength
@@ -108,9 +107,9 @@ public partial class Plugin
                 return;
             }
             
-            SessionPersistenceLength.Value = Math.Min(Math.Max(0, value), 24);
+            _sessionPersistenceLength.Value = Math.Min(Math.Max(0, value), 24);
         });
-        sessionPersistenceLengthInput.InputField.SetText(SessionPersistenceLength.Value.ToString());
+        sessionPersistenceLengthInput.InputField.SetText(_sessionPersistenceLength.Value.ToString());
         #endregion
 
         UIHelper.CreateButton(modGroup, "OpenSpinRequestsRepositoryButton", "SpinRequests_GitHubButtonText", () =>

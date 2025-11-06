@@ -137,8 +137,8 @@ public partial class Plugin : BaseUnityPlugin
 
     private static void TrackOnStartedPlayingTrack(PlayableTrackDataHandle dataHandle, PlayState[] _)
     {
-        TrackTimePatches._hasSetPlayed = false;
-        TrackTimePatches._neededTrackTime = dataHandle.Data.SoundEndTime * (ConsiderPlayedAfterThisPercentage.Value / 100f);
+        TrackTimePatches.HasSetPlayed = false;
+        TrackTimePatches.NeededTrackTime = dataHandle.Data.SoundEndTime * (_considerPlayedAfterThisPercentage.Value / 100f);
         
         AddToPlayedMapHistory(dataHandle);
     }
@@ -154,9 +154,9 @@ public partial class Plugin : BaseUnityPlugin
         if (File.Exists(SessionPlayHistoryPath))
         {
             long lastWriteTimeUtc = ((DateTimeOffset)File.GetLastWriteTimeUtc(SessionPlayHistoryPath)).ToUnixTimeSeconds();
-            if (currentTimeUtc - lastWriteTimeUtc > SessionPersistenceLength.Value * SECONDS_IN_AN_HOUR)
+            if (currentTimeUtc - lastWriteTimeUtc > _sessionPersistenceLength.Value * SECONDS_IN_AN_HOUR)
             {
-                Log.LogInfo($"Previous session's play history is more than {SessionPersistenceLength.Value} hour(s) old, not loading it");
+                Log.LogInfo($"Previous session's play history is more than {_sessionPersistenceLength.Value} hour(s) old, not loading it");
             }
             else
             {
@@ -170,9 +170,9 @@ public partial class Plugin : BaseUnityPlugin
         if (File.Exists(SessionThresholdHistoryPath))
         {
             long lastWriteTimeUtc = ((DateTimeOffset)File.GetLastWriteTimeUtc(SessionThresholdHistoryPath)).ToUnixTimeSeconds();
-            if (currentTimeUtc - lastWriteTimeUtc > SessionPersistenceLength.Value * SECONDS_IN_AN_HOUR)
+            if (currentTimeUtc - lastWriteTimeUtc > _sessionPersistenceLength.Value * SECONDS_IN_AN_HOUR)
             {
-                Log.LogInfo($"Previous session's threshold history is more than {SessionPersistenceLength.Value} hour(s) old, not loading it");
+                Log.LogInfo($"Previous session's threshold history is more than {_sessionPersistenceLength.Value} hour(s) old, not loading it");
             }
             else
             {
