@@ -99,6 +99,7 @@ internal class HttpApi
         byte[] response = Encoding.Default.GetBytes("{\"message\": \"Invalid request\"}");
 
         bool forced = false;
+        bool forceTwoHundred = false;
         if (query != null)
         {
             if (query.TryGetValue("force", out string forcedString))
@@ -106,6 +107,14 @@ internal class HttpApi
                 if (bool.TryParse(forcedString, out bool forcedBool))
                 {
                     forced = forcedBool;
+                }
+            }
+
+            if (query.TryGetValue("forceTwoHundred", out string forcedTwoHundredString))
+            {
+                if (bool.TryParse(forcedTwoHundredString, out bool forcedTwoHundredBool))
+                {
+                    forceTwoHundred = forcedTwoHundredBool;
                 }
             }
         }
@@ -217,7 +226,7 @@ internal class HttpApi
         }
         
         finalResponse:
-            return new KeyValuePair<int, byte[]>(code, response);
+            return new KeyValuePair<int, byte[]>(forceTwoHundred ? 200 : code, response);
     }
 
     private static KeyValuePair<int, byte[]> HandleQueueContext(Dictionary<string, string>? query = null)
