@@ -216,7 +216,7 @@ public class QueueEntry
                 else
                 {
                     File.Move(srtbFilename,
-                        Path.Combine(Plugin.CustomsPath, $"{FileReference}.old_{unixTimestamp}.srtb"));
+                        Path.Combine(Plugin.CustomsPath, $"{FileReference}old_{unixTimestamp}.srtb"));
                 }
             }
             if (File.Exists(artFilename))
@@ -228,7 +228,7 @@ public class QueueEntry
                 else
                 {
                     File.Move(artFilename,
-                        Path.Combine(Plugin.CustomsPath, $"AlbumArt/{FileReference}.old_{unixTimestamp}.png"));
+                        Path.Combine(Plugin.CustomsPath, $"AlbumArt/{FileReference}old_{unixTimestamp}.png"));
                 }
             }
 
@@ -252,6 +252,11 @@ public class QueueEntry
                 metadataHandle = XDSelectionListMenu.Instance._sortedTrackList.First(handle =>
                 {
                     if (string.IsNullOrEmpty(handle.UniqueName))
+                    {
+                        return false;
+                    }
+
+                    if (handle.UniqueName.Contains("old_"))
                     {
                         return false;
                     }
