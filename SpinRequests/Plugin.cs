@@ -127,6 +127,10 @@ public partial class Plugin : BaseUnityPlugin
                 Log.LogMessage($"{nameof(SpinRequests)} is up to date!");
             }
         });
+        
+#if DEBUG
+        ReallyDontWantToWriteDownDataForOverAHundredChartsSorry();
+#endif
     }
 
     private void OnDisable()
@@ -216,4 +220,54 @@ public partial class Plugin : BaseUnityPlugin
         MapsThatCrossedPlayedThreshold.Add(fileReference);
         File.WriteAllText(SessionThresholdHistoryPath, JsonConvert.SerializeObject(MapsThatCrossedPlayedThreshold));
     }
+
+#if DEBUG
+    private static void ReallyDontWantToWriteDownDataForOverAHundredChartsSorry()
+    {
+        List<Dictionary<string, string>> rows = [];
+        int longestTitle = 0;
+        
+        // (resharper what the fuck)
+        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+        // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator
+        foreach (MetadataHandle metadataHandle in XDSelectionListMenu.Instance._sortedTrackList)
+        {
+            if (metadataHandle.IsCustom)
+            {
+                continue;
+            }
+            
+            QueueEntry data = new(metadataHandle);
+
+            if (data.NonCustomId is null or "BG0")
+            {
+                continue;
+            }
+
+            Dictionary<string, string> row = new()
+            {
+                ["ID"] = data.NonCustomId,
+                ["Title"] = $"{data.Title}{(string.IsNullOrEmpty(data.Subtitle) ? "" : $" - {data.Subtitle}")}",
+                ["Artist"] = data.Artist
+            };
+            rows.Add(row);
+
+            if (row["Title"].Length > longestTitle)
+            {
+                longestTitle = row["Title"].Length;
+            }
+        }
+
+        longestTitle += 4;
+
+        List<string> output = [];
+        // ReSharper disable once ForeachCanBeConvertedToQueryUsingAnotherGetEnumerator
+        foreach (Dictionary<string, string> row in rows)
+        {
+            output.Add($"{row["ID"],-8}{row["Title"].PadRight(longestTitle)}{row["Artist"]}");
+        }
+        
+        File.WriteAllLines(Path.Combine(DataPath, "noncustoms.txt"), output);
+    }
+#endif
 }
