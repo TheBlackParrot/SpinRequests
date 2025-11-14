@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,6 +35,7 @@ public class QueueEntry
     public string Artist { get; set; } = string.Empty;
     public string Mapper { get; set; } = string.Empty;
     public int? SpinShareKey { get; set; }
+    public string? NonCustomId { get; set; }
     public string Requester { get; set; } = string.Empty;
     public string Service { get; set; } = string.Empty;
     public int? EasyRating { get; set; }
@@ -60,6 +62,11 @@ public class QueueEntry
     {
         get
         {
+            if (NonCustomId is not null and not "BG0")
+            {
+                return true;
+            }
+            
             string path = Path.Combine(Plugin.CustomsPath, $"{FileReference}.srtb");
             
             if (FileReference == null || !File.Exists(path))
@@ -80,6 +87,25 @@ public class QueueEntry
     [JsonIgnore] private CustomButton? _playButton;
     // ReSharper restore UnusedAutoPropertyAccessor.Global
     // ReSharper restore MemberCanBePrivate.Global
+    
+    [JsonIgnore] private MetadataHandle? _handle;
+
+    private void SetQueryDetails(Dictionary<string, string>? query = null)
+    {
+        if (query == null)
+        {
+            return;
+        }
+        
+        if (query.TryGetValue("user", out string? user))
+        { 
+            Requester = user;
+        }
+        if (query.TryGetValue("service", out string? service))
+        { 
+            Service = service;
+        }
+    }
     
     public QueueEntry(SongDetail details, Dictionary<string, string>? query = null)
     {
@@ -106,40 +132,86 @@ public class QueueEntry
         {
             UpdateDateTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(details.updateDate.date, "W. Europe Standard Time", TimeZoneInfo.Local.Id);
         }
+        
+        SetQueryDetails(query);
+    }
+    
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    [SuppressMessage("ReSharper", "UnusedMember.Local")]
+    // where in the flippity frick do i find these >:(
+    internal enum DlcAbbreviations
+    {
+        BG = 0, // Base game
+        MC = 1000, // Monstercat
+        CH = 2000, // Chillhop
+        SP = 3000, // Supporter Pack
+        IN = 4000 // Indie Pack
+    }
+    private Dictionary<DlcAbbreviations, string> _dlcNames = new Dictionary<DlcAbbreviations, string>()
+    {
+        { DlcAbbreviations.BG, "Base Game" },
+        { DlcAbbreviations.MC, "Monstercat DLC" },
+        { DlcAbbreviations.CH, "Chillhop DLC" },
+        { DlcAbbreviations.SP, "Supporter Pack DLC" },
+        { DlcAbbreviations.IN, "Indie Pack DLC" }
+    };
 
-        if (query == null)
+    private static string GetFileReference(MetadataHandle metadataHandle)
+    {
+        string? reference = metadataHandle.UniqueName;
+        if (string.IsNullOrEmpty(reference))
         {
-            return;
+            return reference;
         }
         
-        if (query.TryGetValue("user", out string? user))
-        { 
-            Requester = user;
+        if (reference.LastIndexOf('_') != -1)
+        {
+            reference = reference.Remove(metadataHandle.UniqueName.LastIndexOf('_')).Replace("CUSTOM_", string.Empty);
         }
-        if (query.TryGetValue("service", out string? service))
-        { 
-            Service = service;
-        }
+        
+        return reference;
     }
+
+    public QueueEntry(MetadataHandle metadataHandle, Dictionary<string, string>? query = null)
+    {
+        _handle = metadataHandle;
+        TrackInfoMetadata metadata = metadataHandle.TrackInfoMetadata;
+        
+        Title = metadata.title;
+        Subtitle = metadata.subtitle;
+        Artist = $"{metadata.artistName}{(string.IsNullOrEmpty(metadata.featArtists) ? "" : $" {metadata.featArtists}")}";
+        Mapper = metadata.charter;
+        NonCustomId = $"{(DlcAbbreviations)metadata.trackOrder - (metadata.trackOrder % 1000)}{metadata.trackOrder % 1000}";
+        FileReference = GetFileReference(metadataHandle);
+
+        TrackDataMetadata? easyInfo = metadataHandle.TrackDataMetadata.GetMetadataForDifficulty(TrackData.DifficultyType.Easy);
+        EasyRating = easyInfo?.DifficultyRating;
+        TrackDataMetadata? normalInfo = metadataHandle.TrackDataMetadata.GetMetadataForDifficulty(TrackData.DifficultyType.Normal);
+        NormalRating = normalInfo?.DifficultyRating;
+        TrackDataMetadata? hardInfo = metadataHandle.TrackDataMetadata.GetMetadataForDifficulty(TrackData.DifficultyType.Hard);
+        HardRating = hardInfo?.DifficultyRating;
+        TrackDataMetadata? expertInfo = metadataHandle.TrackDataMetadata.GetMetadataForDifficulty(TrackData.DifficultyType.Expert);
+        ExpertRating = expertInfo?.DifficultyRating;
+        TrackDataMetadata? xdInfo = metadataHandle.TrackDataMetadata.GetMetadataForDifficulty(TrackData.DifficultyType.XD);
+        XDRating = xdInfo?.DifficultyRating;
+        TrackDataMetadata? remixdInfo = metadataHandle.TrackDataMetadata.GetMetadataForDifficulty(TrackData.DifficultyType.RemiXD);
+        RemiXDRating = remixdInfo?.DifficultyRating;
+        
+        SetQueryDetails(query);
+    }
+    
     public QueueEntry(PlayableTrackData trackData)
     {
         TrackInfoMetadata metadata = trackData.Setup.TrackDataSegmentForSingleTrackDataSetup.metadata.TrackInfoMetadata;
         MetadataHandle metadataHandle = trackData.Setup.TrackDataSegmentForSingleTrackDataSetup.metadata;
+        _handle = metadataHandle;
         
         Title = metadata.title;
         Subtitle = metadata.subtitle;
-        Artist = metadata.artistName;
+        Artist = $"{metadata.artistName}{(string.IsNullOrEmpty(metadata.featArtists) ? "" : $" {metadata.featArtists}")}";
         Mapper = metadata.charter;
-        
-        string? reference = metadataHandle.UniqueName;
-        if (!string.IsNullOrEmpty(reference))
-        {
-            if (reference.LastIndexOf('_') != -1)
-            {
-                reference = reference.Remove(metadataHandle.UniqueName.LastIndexOf('_')).Replace("CUSTOM_", string.Empty);
-            }
-        }
-        FileReference = reference;
+        NonCustomId = $"{(DlcAbbreviations)metadata.trackOrder - (metadata.trackOrder % 1000)}{metadata.trackOrder % 1000}";
+        FileReference = GetFileReference(metadataHandle);
         
         ActiveDifficulty = trackData.Difficulty.ToString();
         // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
@@ -171,7 +243,7 @@ public class QueueEntry
     {
         await Awaitable.MainThreadAsync();
                 
-        Plugin.Log.LogDebug($"PLAY -- {Title} ({SpinShareKey})");
+        Plugin.Log.LogDebug($"PLAY -- {Title} ({SpinShareKey?.ToString() ?? NonCustomId})");
         
         XDSelectionListMenu.Instance.ClearSearch();
         PlayerSettingsData.Instance.FilterCustomTracks.ResetData();
@@ -179,7 +251,7 @@ public class QueueEntry
         PlayerSettingsData.Instance.FilterMinimumDifficulty.ResetData();
         PlayerSettingsData.Instance.ShowOnlyFavouritesArcade.ResetData();
 
-        if (!AlreadyDownloaded)
+        if (!AlreadyDownloaded && NonCustomId is null or "BG0")
         {
             WorldMenuGameState? worldMenuGameState = Object.FindAnyObjectByType<WorldMenuGameState>();
             Transform? levelSelectTransform = worldMenuGameState?.transform.Find("LevelSelect");
@@ -249,7 +321,8 @@ public class QueueEntry
         keepTrying:
             try
             {
-                metadataHandle = XDSelectionListMenu.Instance._sortedTrackList.First(handle =>
+                
+                metadataHandle = _handle ?? XDSelectionListMenu.Instance._sortedTrackList.First(handle =>
                 {
                     if (string.IsNullOrEmpty(handle.UniqueName))
                     {
@@ -281,7 +354,7 @@ public class QueueEntry
                 attempts++;
                 if (attempts >= 12)
                 {
-                    FailedDownloadingMap($"Failed to find map {SpinShareKey}");
+                    FailedDownloadingMap($"Failed to find map {SpinShareKey?.ToString() ?? NonCustomId}");
                     throw;
                 }
                 await Task.Delay(250);
@@ -289,7 +362,7 @@ public class QueueEntry
             }
 
 #if DEBUG
-        Plugin.Log.LogInfo($"Found map {SpinShareKey} after {attempts} attempts");
+        Plugin.Log.LogInfo($"Found map {SpinShareKey?.ToString() ?? NonCustomId} after {attempts} attempts");
 #endif
         
         XDSelectionListMenu.Instance.ScrollToTrack(metadataHandle);
@@ -314,7 +387,7 @@ public class QueueEntry
 
     private void SkipButtonPressed()
     {
-        Plugin.Log.LogDebug($"SKIP -- {Title} ({SpinShareKey})");
+        Plugin.Log.LogDebug($"SKIP -- {Title} ({SpinShareKey?.ToString() ?? NonCustomId})");
         QueueList.Entries.Remove(this);
         QueueList.CheckIndicatorDot();
         QueueList.SavePersistentQueue();
@@ -329,7 +402,7 @@ public class QueueEntry
         if (!silent && Plugin.EnableQueueNotifications.Value)
         {
             NotificationSystemGUI.AddMessage(
-                $"<b>{Requester}</b> added <i>{Title}</i> <alpha=#AA>({SpinShareKey})<alpha=#FF> to the queue!", 7f);
+                $"<b>{Requester}</b> added <i>{Title}</i> <alpha=#AA>({SpinShareKey?.ToString() ?? NonCustomId})<alpha=#FF> to the queue!", 7f);
         }
 
         if (QueueList.QueueListContainer == null)
@@ -346,25 +419,40 @@ public class QueueEntry
         displayGroup.Transform.GetComponent<HorizontalLayoutGroup>().spacing = 10f;
         
         #region art
-        // web requests to file:// are just easier and i'm all about easy
-        UnityWebRequest request = UnityWebRequestTexture.GetTexture(AlreadyDownloaded
-            ? $"file://{Plugin.CustomsPath}/AlbumArt/{FileReference}.png"
-            : $"https://spinsha.re/uploads/thumbnail/{FileReference}.jpg");
-        UnityWebRequestAsyncOperation response = request.SendWebRequest();
 
-        response.completed += async _ =>
+        void SetArt(Texture2D texture)
         {
-            await Awaitable.MainThreadAsync();
-            
-            Texture2D texture = DownloadHandlerTexture.GetContent(request);
             CustomImage artImage = UIHelper.CreateImage(displayGroup, "QueueEntryArt", texture);
             artImage.Transform.SetSiblingIndex(0);
-            
+
             artImage.Transform.GetChild(0).GetComponent<RectTransform>().sizeDelta = new Vector2(110, 110);
 
             artImage.Transform.GetComponent<LayoutElement>().preferredHeight = 100;
             artImage.Transform.GetComponent<RectTransform>().sizeDelta = new Vector2(100, 100);
-        };
+        }
+        
+        if (NonCustomId is not null and not "BG0")
+        {
+            await Awaitable.MainThreadAsync();
+            SetArt(_handle!.albumArtRef.asset);
+        }
+        else
+        {
+            // web requests to file:// are just easier and i'm all about easy
+            UnityWebRequest request = UnityWebRequestTexture.GetTexture(AlreadyDownloaded
+                ? $"file://{Plugin.CustomsPath}/AlbumArt/{FileReference}.png"
+                : $"https://spinsha.re/uploads/thumbnail/{FileReference}.jpg");
+            UnityWebRequestAsyncOperation response = request.SendWebRequest();
+
+            response.completed += async _ =>
+            {
+                await Awaitable.MainThreadAsync();
+
+                Texture2D texture = DownloadHandlerTexture.GetContent(request);
+                SetArt(texture);
+            };
+        }
+
         #endregion
 
         #region metadata
@@ -397,7 +485,18 @@ public class QueueEntry
         entryMapperTextComponent.textWrappingMode = TextWrappingModes.NoWrap;
         entryMapperTextComponent.overflowMode = TextOverflowModes.Ellipsis;
         entryMapperTextComponent.fontSize = 24;
-        entryMapper.ExtraText = $"<alpha=#AA>charted by <alpha=#FF>{Mapper}";
+        if (NonCustomId is not null and not "BG0")
+        {
+            if (Enum.TryParse(NonCustomId.Substring(0, 2), true, out DlcAbbreviations abbreviation))
+            {
+                entryMapper.ExtraText = $"<alpha=#AA>from the <alpha=#FF>{_dlcNames[abbreviation]}";   
+            }
+        }
+        else
+        {
+            entryMapper.ExtraText = $"<alpha=#AA>charted by <alpha=#FF>{Mapper}";
+        }
+
         #endregion
         
         #region difficulty labels

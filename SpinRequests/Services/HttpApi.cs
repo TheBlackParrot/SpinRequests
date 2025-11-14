@@ -129,8 +129,16 @@ internal class HttpApi
             }
         }
 
+        string inputString = path.Last().Replace("/", string.Empty).ToLower();
+        
+        QueueEntry.DlcAbbreviations? entry = null;
+        if (Enum.TryParse(inputString.Substring(0, 2), true, out QueueEntry.DlcAbbreviations entryOut))
+        {
+            entry = entryOut;
+        }
+        
         bool trySearch = !int.TryParse(path.Last().Replace("/", string.Empty).ToLower(), NumberStyles.Integer,
-            CultureInfo.InvariantCulture, out int id);
+            CultureInfo.InvariantCulture, out int id) && entry == null;
 
         if (trySearch)
         {
@@ -182,49 +190,84 @@ internal class HttpApi
             }
         }
 
-        Content<SongDetail> content;
-        try
+        if (entry == null)
         {
-            content = await Plugin.SpinShare.getSongDetail(id.ToString());
-        }
-        catch (Exception exception)
-        {
-            switch (exception)
+            Content<SongDetail> content;
+            try
             {
-                case TaskCanceledException:
-                    code = 504;
-                    response = Encoding.Default.GetBytes("{\"message\": \"SpinShare API request timed out\"}");
-                    Plugin.Log.LogInfo("Request timed out");
-                    goto finalResponse;
-                    
-                case JsonException:
-                    code = 404;
-                    response = Encoding.Default.GetBytes("{\"message\": \"This map does not exist\"}");
-                    Plugin.Log.LogInfo("Map doesn't exist");
-                    goto finalResponse;
+                content = await Plugin.SpinShare.getSongDetail(id.ToString());
+            }
+            catch (Exception exception)
+            {
+                switch (exception)
+                {
+                    case TaskCanceledException:
+                        code = 504;
+                        response = Encoding.Default.GetBytes("{\"message\": \"SpinShare API request timed out\"}");
+                        Plugin.Log.LogInfo("Request timed out");
+                        goto finalResponse;
+
+                    case JsonException:
+                        code = 404;
+                        response = Encoding.Default.GetBytes("{\"message\": \"This map does not exist\"}");
+                        Plugin.Log.LogInfo("Map doesn't exist");
+                        goto finalResponse;
+                }
+
+                code = 500;
+                response = Encoding.Default.GetBytes("{\"message\": \"" + exception.Message + "\"}");
+                Plugin.Log.LogError(exception);
+                goto finalResponse;
             }
 
-            code = 500;
-            response = Encoding.Default.GetBytes("{\"message\": \"" + exception.Message + "\"}");
-            Plugin.Log.LogError(exception);
-            goto finalResponse;
+            SongDetail details = content.data;
+            QueueEntry serializedData = new(details, query);
+
+            // ReSharper disable once InvertIf
+            if (serializedData.SpinShareKey != null)
+            {
+                if (addToQueue)
+                {
+                    await serializedData.AddToQueue();
+                }
+
+                code = 200;
+                response = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(serializedData));
+            }
         }
-
-        SongDetail details = content.data;
-        QueueEntry serializedData = new(details, query);
-
-        // ReSharper disable once InvertIf
-        if (serializedData.SpinShareKey != null)
+        else
         {
+            if(!int.TryParse(inputString.Substring(2), out int trackOrder))
+            {
+                goto finalResponse;
+            }
+            if (trackOrder <= 0)
+            {
+                goto finalResponse;
+            }
+
+            trackOrder += (int)entry;
+
+            MetadataHandle? handle = null;
+            try
+            {
+                handle = XDSelectionListMenu.Instance._sortedTrackList.First(x => x.trackInfoMetadata.trackOrder == trackOrder);
+            }
+            catch (Exception)
+            {
+                goto finalResponse;
+            }
+
+            QueueEntry serializedData = new(handle, query);
             if (addToQueue)
             {
                 await serializedData.AddToQueue();
             }
-            
+
             code = 200;
             response = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(serializedData));
         }
-        
+
         finalResponse:
             return new KeyValuePair<int, byte[]>(forceTwoHundred ? 200 : code, response);
     }
