@@ -36,6 +36,7 @@ public class QueueEntry
     public string Mapper { get; set; } = string.Empty;
     public int? SpinShareKey { get; set; }
     public string? NonCustomId { get; set; }
+    public bool IsCustom { get; set; }
     public string Requester { get; set; } = string.Empty;
     public string Service { get; set; } = string.Empty;
     public int? EasyRating { get; set; }
@@ -62,7 +63,7 @@ public class QueueEntry
     {
         get
         {
-            if (NonCustomId is not null and not "BG0")
+            if (!IsCustom)
             {
                 return true;
             }
@@ -109,6 +110,8 @@ public class QueueEntry
     
     public QueueEntry(SongDetail details, Dictionary<string, string>? query = null)
     {
+        IsCustom = true;
+        
         Title = details.title;
         Subtitle = details.subtitle;
         Artist = details.artist;
@@ -183,6 +186,7 @@ public class QueueEntry
         Mapper = metadata.charter;
         NonCustomId = $"{(DlcAbbreviations)metadata.trackOrder - (metadata.trackOrder % 1000)}{metadata.trackOrder % 1000}";
         FileReference = GetFileReference(metadataHandle);
+        IsCustom = metadata.isCustom;
 
         TrackDataMetadata? easyInfo = metadataHandle.TrackDataMetadata.GetMetadataForDifficulty(TrackData.DifficultyType.Easy);
         EasyRating = easyInfo?.DifficultyRating;
@@ -212,6 +216,7 @@ public class QueueEntry
         Mapper = metadata.charter;
         NonCustomId = $"{(DlcAbbreviations)metadata.trackOrder - (metadata.trackOrder % 1000)}{metadata.trackOrder % 1000}";
         FileReference = GetFileReference(metadataHandle);
+        IsCustom = metadata.isCustom;
         
         ActiveDifficulty = trackData.Difficulty.ToString();
         // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
@@ -431,7 +436,7 @@ public class QueueEntry
             artImage.Transform.GetComponent<RectTransform>().sizeDelta = new Vector2(100, 100);
         }
         
-        if (NonCustomId is not null and not "BG0")
+        if (!IsCustom)
         {
             await Awaitable.MainThreadAsync();
             SetArt(_handle!.albumArtRef.asset);
@@ -485,9 +490,9 @@ public class QueueEntry
         entryMapperTextComponent.textWrappingMode = TextWrappingModes.NoWrap;
         entryMapperTextComponent.overflowMode = TextOverflowModes.Ellipsis;
         entryMapperTextComponent.fontSize = 24;
-        if (NonCustomId is not null and not "BG0")
+        if (!IsCustom)
         {
-            if (Enum.TryParse(NonCustomId.Substring(0, 2), true, out DlcAbbreviations abbreviation))
+            if (Enum.TryParse(NonCustomId!.Substring(0, 2), true, out DlcAbbreviations abbreviation))
             {
                 entryMapper.ExtraText = $"<alpha=#AA>from the <alpha=#FF>{_dlcNames[abbreviation]}";   
             }

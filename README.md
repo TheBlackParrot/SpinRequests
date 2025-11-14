@@ -27,6 +27,14 @@ As this is really only a web server, you can test any of these endpoints in any 
 | `/query`   | Queries SpinShare for basic map information.<br/>`/query/12345`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | [Map Data](#map-data-type)           |
 | `/queue`   | Gets the current request queue.<br/>- Requests from specific users can be obtained by using a `user` query parameter.<br/>`/queue?user=TheBlackParrot`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Array([Map Data](#map-data-type))    |
 
+**Base game and DLC maps will also work with the mod,** but must be *specifically* asked for by using their identifiers (codes/numbers visible in the top-left corner of the in-game chart card when selecting a chart).
+> [!NOTE]
+> **Base game maps use an identifier of `BG##`.**
+>
+> For example: 
+> - "Into the Light" by Notaker from the Monstercat DLC Pack has an ID of `MC3`, which is the same identifier visible in the top-left corner of its in-game chart card.
+> - "Humanity" by Max Brhon from the base game has an ID of `5`. Since it's a base game map, it's referred to as `BG5`.
+
 > [!NOTE]
 > SpinShare supports map links using file reference codes, integer IDs are not needed. (e.g. `https://spinsha.re/song/spinshare_688b977c51882`)
 
@@ -70,7 +78,9 @@ All events follow the same data structure:
   "Subtitle": <string>,
   "Artist": <string>,
   "Mapper": <string>,
-  "SpinShareKey": <integer>,
+  "SpinShareKey": <integer (nullable)>,
+  "NonCustomId": <string (nullable)>,
+  "IsCustom": <bool>,
   "Requester": <string>,
   "Service": <string>,
   "EasyRating": <integer (nullable)>,
@@ -91,7 +101,7 @@ All events follow the same data structure:
 > [!NOTE]
 > SpinShare does not respond with any data pertaining to the RemiXD difficulty (if present), this can only be generated using data from in-game.
 > 
-> *For the time being, this can only be set from the `/history` endpoint, otherwise it will always be null.*
+> *For the time being, this can only be set from the `/history` endpoint and base game/DLC maps, otherwise it will always be null.*
  
 ---
 
