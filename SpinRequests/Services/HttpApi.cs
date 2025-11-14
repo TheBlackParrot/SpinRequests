@@ -130,13 +130,18 @@ internal class HttpApi
         }
 
         string inputString = path.Last().Replace("/", string.Empty).ToLower();
-        
+
+        string packCode = inputString.Substring(0, 2).ToUpper();
         QueueEntry.DlcAbbreviations? entry = null;
-        if (Enum.TryParse(inputString.Substring(0, 2), true, out QueueEntry.DlcAbbreviations entryOut))
+        if (Enum.IsDefined(typeof(QueueEntry.DlcAbbreviations), packCode))
         {
-            entry = entryOut;
+            if (Enum.TryParse(packCode, out QueueEntry.DlcAbbreviations entryOut))
+            {
+                Plugin.Log.LogInfo($"Parsed as {entryOut}");
+                entry = entryOut;
+            }
         }
-        
+
         bool trySearch = !int.TryParse(path.Last().Replace("/", string.Empty).ToLower(), NumberStyles.Integer,
             CultureInfo.InvariantCulture, out int id) && entry == null;
 
