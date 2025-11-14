@@ -89,7 +89,7 @@ public class QueueEntry
     // ReSharper restore UnusedAutoPropertyAccessor.Global
     // ReSharper restore MemberCanBePrivate.Global
     
-    [JsonIgnore] private MetadataHandle? _handle;
+    [JsonIgnore] private readonly MetadataHandle? _handle;
 
     private void SetQueryDetails(Dictionary<string, string>? query = null)
     {
@@ -150,7 +150,7 @@ public class QueueEntry
         SP = 3000, // Supporter Pack
         IN = 4000 // Indie Pack
     }
-    private Dictionary<DlcAbbreviations, string> _dlcNames = new Dictionary<DlcAbbreviations, string>()
+    private readonly Dictionary<DlcAbbreviations, string> _dlcNames = new()
     {
         { DlcAbbreviations.BG, "Base Game" },
         { DlcAbbreviations.MC, "Monstercat DLC" },

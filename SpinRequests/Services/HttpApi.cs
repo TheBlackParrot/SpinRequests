@@ -253,7 +253,7 @@ internal class HttpApi
 
             trackOrder += (int)entry;
 
-            MetadataHandle? handle = null;
+            MetadataHandle? handle;
             try
             {
                 handle = XDSelectionListMenu.Instance._sortedTrackList.First(x => x.trackInfoMetadata.trackOrder == trackOrder);
