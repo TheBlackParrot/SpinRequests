@@ -16,6 +16,7 @@ public partial class Plugin
     
     internal static ConfigEntry<bool> EnableQueueNotifications = null!;
     internal static ConfigEntry<bool> DeleteOldMapFiles = null!;
+    internal static ConfigEntry<bool> JumpToMapAfterDownloading = null!;
     private static ConfigEntry<int> _considerPlayedAfterThisPercentage = null!;
     private static ConfigEntry<int> _sessionPersistenceLength = null!;
 
@@ -37,6 +38,8 @@ public partial class Plugin
             "Show notifications for maps added to the queue");
         DeleteOldMapFiles = Config.Bind("General", "DeleteOldMapFiles", false,
             "Delete old map files when downloading updated maps");
+        JumpToMapAfterDownloading = Config.Bind("General", "JumpToMapAfterDownloading", true,
+            "Automatically jump to the downloaded map in the map list once downloading finishes");
         _considerPlayedAfterThisPercentage = Config.Bind("General", "ConsiderPlayedAfterThisPercentage", 0,
             "How much of the chart must be played before it's considered an already played chart");
         _sessionPersistenceLength = Config.Bind("Persistence", "SessionPersistenceLength", 0,
@@ -52,6 +55,7 @@ public partial class Plugin
         
         TranslationHelper.AddTranslation("SpinRequests_EnableQueueNotifications", "Enable queue notifications");
         TranslationHelper.AddTranslation("SpinRequests_DeleteOldMapFiles", "Delete old map files when downloading updated maps");
+        TranslationHelper.AddTranslation("SpinRequests_JumpToMapAfterDownloading", "Jump to downloaded maps once download finishes");
     }
 
     private static void RootModPageOnOnPageLoad(Transform rootModPageTransform)
@@ -76,6 +80,16 @@ public partial class Plugin
             "SpinRequests_DeleteOldMapFiles", DeleteOldMapFiles.Value, value =>
             {
                 DeleteOldMapFiles.Value = value;
+            });
+        #endregion
+        
+        #region JumpToMapAfterDownloading
+        CustomGroup jumpToMapAfterDownloadingGroup = UIHelper.CreateGroup(modGroup, "JumpToMapAfterDownloadingGroup");
+        jumpToMapAfterDownloadingGroup.LayoutDirection = Axis.Horizontal;
+        UIHelper.CreateSmallToggle(jumpToMapAfterDownloadingGroup, nameof(JumpToMapAfterDownloading),
+            "SpinRequests_JumpToMapAfterDownloading", JumpToMapAfterDownloading.Value, value =>
+            {
+                JumpToMapAfterDownloading.Value = value;
             });
         #endregion
         

@@ -280,7 +280,7 @@ public class QueueEntry
         return reference.Replace("CUSTOM_", string.Empty);
     }
 
-    private async Task PlayButtonPressed()
+    private async Task<bool> PlayButtonPressed()
     {
         await Awaitable.MainThreadAsync();
                 
@@ -291,6 +291,11 @@ public class QueueEntry
         PlayerSettingsData.Instance.FilterMaximumDifficulty.ResetData();
         PlayerSettingsData.Instance.FilterMinimumDifficulty.ResetData();
         PlayerSettingsData.Instance.ShowOnlyFavouritesArcade.ResetData();
+
+        XDNavigable navigable = _playButton!.Transform.GetComponent<XDNavigable>();
+        XDNavigableButton navigableButton = _playButton!.Transform.GetComponent<XDNavigableButton>();
+
+        bool previousDownloadedState = AlreadyDownloaded;
 
         if (!AlreadyDownloaded && NonCustomId is null or "BG0")
         {
@@ -312,9 +317,9 @@ public class QueueEntry
 
             NotificationSystemGUI.AddMessage($"Downloading map {SpinShareKey}...", 5f);
             
-            _playButton!.Transform.GetComponent<XDNavigable>().forceExpanded = false;
-            _playButton!.Transform.GetComponent<XDNavigable>().navigable = false;
-            _playButton!.Transform.GetComponent<XDNavigableButton>().interactable = false;
+            navigable.forceExpanded = false;
+            navigable.navigable = false;
+            navigableButton.interactable = false;
             _playButton!.TextTranslationKey = "SpinRequests_DownloadingButtonText";
 
             string srtbFilename = Path.Combine(Plugin.CustomsPath, $"{FileReference}.srtb");
@@ -405,12 +410,36 @@ public class QueueEntry
 #if DEBUG
         Plugin.Log.LogInfo($"Found map {SpinShareKey?.ToString() ?? NonCustomId} after {attempts} attempts");
 #endif
-        
-        XDSelectionListMenu.Instance.ScrollToTrack(metadataHandle);
-        QueueList.Entries.Remove(this);
-        QueueList.CheckIndicatorDot();
-        QueueList.SavePersistentQueue();
-        SocketApi.Broadcast("Played", this);
+
+        if (!previousDownloadedState)
+        {
+            if (Plugin.JumpToMapAfterDownloading.Value)
+            {
+                goto finished;
+            }
+
+            _playButton!.TextTranslationKey = "SpinRequests_PlayButtonText";
+            Duration = Mathf.FloorToInt(metadataHandle.GetClosestTrackData(TrackData.DifficultyType.XD, IntRange.FromStartAndCount(0, 255)).Duration);
+            if (Duration != null)
+            {
+                _playButton.ExtraText = $" <alpha=#AA>({Duration.Value / 60}:{(Duration.Value % 60).ToString().PadLeft(2, '0')})";
+            }
+            
+            navigable.forceExpanded = true;
+            navigable.navigable = true;
+            navigableButton.interactable = true;
+            
+            QueueList.SavePersistentQueue();
+            
+            return false;
+        }
+
+        finished:
+            XDSelectionListMenu.Instance.ScrollToTrack(metadataHandle);
+            QueueList.Entries.Remove(this);
+            QueueList.CheckIndicatorDot();
+            SocketApi.Broadcast("Played", this);
+            return true;
     }
 
     private void FailedDownloadingMap(string? message = null)
@@ -613,8 +642,10 @@ public class QueueEntry
         {
             try
             {
-                await PlayButtonPressed();
-                Object.Destroy(entryGroup.GameObject);
+                if (await PlayButtonPressed())
+                {
+                    Object.Destroy(entryGroup.GameObject);
+                }
             }
             catch (Exception e)
             {
