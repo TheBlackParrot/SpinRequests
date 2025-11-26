@@ -311,7 +311,7 @@ public class QueueEntry
             _playButton!.Transform.GetComponent<XDNavigable>().forceExpanded = false;
             _playButton!.Transform.GetComponent<XDNavigable>().navigable = false;
             _playButton!.Transform.GetComponent<XDNavigableButton>().interactable = false;
-            _playButton!.TextTranslationKey = "SpinRequests_PlayButtonTextDownloading";
+            _playButton!.TextTranslationKey = "SpinRequests_DownloadingButtonText";
 
             string srtbFilename = Path.Combine(Plugin.CustomsPath, $"{FileReference}.srtb");
             string artFilename = Path.Combine(Plugin.CustomsPath, $"AlbumArt/{FileReference}.png");
@@ -414,7 +414,7 @@ public class QueueEntry
         _playButton!.Transform.GetComponent<XDNavigable>().forceExpanded = true;
         _playButton!.Transform.GetComponent<XDNavigable>().navigable = true;
         _playButton!.Transform.GetComponent<XDNavigableButton>().interactable = true;
-        _playButton!.TextTranslationKey = "SpinRequests_PlayButtonText";
+        _playButton!.TextTranslationKey = "SpinRequests_DownloadButtonText";
 
         if (message != null)
         {
@@ -586,7 +586,8 @@ public class QueueEntry
         CustomGroup buttonGroup = UIHelper.CreateGroup(entryGroup, "QueueEntryButtons", Axis.Horizontal);
         
         // lambda moment smh
-        _playButton = UIHelper.CreateButton(buttonGroup, "PlayButton", "SpinRequests_PlayButtonText", async void () =>
+        _playButton = UIHelper.CreateButton(buttonGroup, "PlayButton",
+            $"SpinRequests_{(AlreadyDownloaded ? "PlayButtonText" : "DownloadButtonText")}", async void () =>
         {
             try
             {
