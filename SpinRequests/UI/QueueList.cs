@@ -106,7 +106,7 @@ internal static class QueueList
             return;
         }
 
-        if (BufferedList.Count > 0)
+        if (entries.Length > 0)
         {
             BufferedList.AddRange(entries);
             Plugin.Log.LogInfo("Loaded persistent queue");
