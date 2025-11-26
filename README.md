@@ -69,7 +69,7 @@ All events follow the same data structure:
 # Data structures/schema
 
 <a name="map-data-type"></a>
-## Map data
+## Chart/map data
 > [!CAUTION]
 > Twitch viewers/users with the Moderator status do not have any AutoMod rulesets applied to them. If your bot is a moderator in your channel, responses that are made using any of these metadata fields will be allowed through verbatim.
 ```json
@@ -78,6 +78,7 @@ All events follow the same data structure:
   "Subtitle": <string>,
   "Artist": <string>,
   "Mapper": <string>,
+  "Duration": <integer (nullable)>,
   "SpinShareKey": <integer (nullable)>,
   "NonCustomId": <string (nullable)>,
   "IsCustom": <bool>,
@@ -102,7 +103,13 @@ All events follow the same data structure:
 > SpinShare does not respond with any data pertaining to the RemiXD difficulty (if present), this can only be generated using data from in-game.
 > 
 > *For the time being, this can only be set from the `/history` endpoint and base game/DLC maps, otherwise it will always be null.*
- 
+
+> [!NOTE]
+> The `Duration` field is nullable since:
+> 1. This cannot be obtained until the track list fully loads for custom maps
+> 2. This cannot be obtained for maps from SpinShare that have not been downloaded yet *(SpinShare does not provide duration data)*
+> 
+> The `Duration` field will also reflect the closest difficulty to an XD difficulty's duration.
 ---
 
 **Project includes source files from [websocket-sharp](https://github.com/sta/websocket-sharp/tree/01a1a7559f21e38af1045a1ae1e8c123416b6df3), licensed under MIT**

@@ -34,6 +34,7 @@ public class QueueEntry
     [JsonIgnore] private string TitleFormatted => $"<b>{Title}</b>{(string.IsNullOrEmpty(Subtitle) ? "" : " <size=75%><alpha=#AA>" + Subtitle)}";
     public string Artist { get; set; } = string.Empty;
     public string Mapper { get; set; } = string.Empty;
+    public int? Duration { get; set; }
     public int? SpinShareKey { get; set; }
     public string? NonCustomId { get; set; }
     public bool IsCustom { get; set; }
@@ -135,6 +136,25 @@ public class QueueEntry
         {
             UpdateDateTime = TimeZoneInfo.ConvertTimeBySystemTimeZoneId(details.updateDate.date, "W. Europe Standard Time", TimeZoneInfo.Local.Id);
         }
+
+        if (AlreadyDownloaded)
+        {
+            try
+            {
+                Duration = Mathf.FloorToInt(XDSelectionListMenu.Instance._sortedTrackList
+                    .First(x => GetSafeReference(x.UniqueName) == FileReference)
+                    .GetClosestTrackData(TrackData.DifficultyType.XD, IntRange.FromStartAndCount(0, 255)).Duration);
+            }
+            catch (Exception e)
+            {
+                if (e is not InvalidOperationException)
+                {
+                    throw;
+                }
+                
+                // otherwise, ignore it. happens when the list hasn't loaded yet
+            }
+        }
         
         SetQueryDetails(query);
     }
@@ -184,6 +204,7 @@ public class QueueEntry
         Subtitle = metadata.subtitle;
         Artist = $"{metadata.artistName}{(string.IsNullOrEmpty(metadata.featArtists) ? "" : $" {metadata.featArtists}")}";
         Mapper = metadata.charter;
+        Duration = Mathf.FloorToInt(metadataHandle.GetClosestTrackData(TrackData.DifficultyType.XD, IntRange.FromStartAndCount(0, 255)).Duration);
         NonCustomId = $"{(DlcAbbreviations)metadata.trackOrder - (metadata.trackOrder % 1000)}{metadata.trackOrder % 1000}";
         FileReference = GetFileReference(metadataHandle);
         IsCustom = metadata.isCustom;
@@ -214,6 +235,7 @@ public class QueueEntry
         Subtitle = metadata.subtitle;
         Artist = $"{metadata.artistName}{(string.IsNullOrEmpty(metadata.featArtists) ? "" : $" {metadata.featArtists}")}";
         Mapper = metadata.charter;
+        Duration = Mathf.FloorToInt(trackData.Setup.TrackDataSegmentForSingleTrackDataSetup.GetTrackDataMetadata().Duration);
         NonCustomId = $"{(DlcAbbreviations)metadata.trackOrder - (metadata.trackOrder % 1000)}{metadata.trackOrder % 1000}";
         FileReference = GetFileReference(metadataHandle);
         IsCustom = metadata.isCustom;
@@ -243,6 +265,16 @@ public class QueueEntry
         }
     }
     public QueueEntry() { }
+
+    private static string GetSafeReference(string reference)
+    {
+        if (reference.LastIndexOf('_') != -1)
+        {
+            reference = reference.Remove(reference.LastIndexOf('_'));
+        }
+
+        return reference.Replace("CUSTOM_", string.Empty);
+    }
 
     private async Task PlayButtonPressed()
     {
@@ -568,6 +600,10 @@ public class QueueEntry
         });
         _playButton.Transform.GetComponent<LayoutElement>().preferredWidth = 200;
         _playButton.Transform.GetComponent<XDNavigable>().forceExpanded = true;
+        if (Duration != null)
+        {
+            _playButton.ExtraText = $" <alpha=#AA>({Duration.Value / 60}:{(Duration.Value % 60).ToString().PadLeft(2, '0')})";
+        }
         
         UIHelper.CreateButton(buttonGroup, "SkipButton", "SpinRequests_SkipButtonText", () =>
         {
