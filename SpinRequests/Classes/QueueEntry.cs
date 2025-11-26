@@ -483,7 +483,7 @@ public class QueueEntry
         }
         
         CustomGroup entryGroup = UIHelper.CreateGroup(QueueList.QueueListContainer, "QueueEntry");
-        entryGroup.Transform.GetComponent<VerticalLayoutGroup>().padding = new RectOffset(0, 0, 10, 10);
+        entryGroup.Transform.GetComponent<VerticalLayoutGroup>().padding = new RectOffset(0, 0, 10, 20);
         
         CustomGroup displayGroup = UIHelper.CreateGroup(entryGroup, "QueueEntryDisplay", Axis.Horizontal);
         displayGroup.Transform.GetComponent<HorizontalLayoutGroup>().spacing = 10f;
@@ -544,7 +544,7 @@ public class QueueEntry
         CustomTextMeshProUGUI entryArtistTextComponent = entryArtist.Transform.GetComponent<CustomTextMeshProUGUI>();
         entryArtistTextComponent.textWrappingMode = TextWrappingModes.NoWrap;
         entryArtistTextComponent.overflowMode = TextOverflowModes.Ellipsis;
-        entryArtistTextComponent.fontSize = 24;
+        entryArtistTextComponent.fontSize = 22.5f;
         entryArtistTextComponent.fontStyle = FontStyles.Italic;
         entryArtist.ExtraText = $"<alpha=#AA>by <alpha=#FF>{Artist}";
         
@@ -554,7 +554,7 @@ public class QueueEntry
         CustomTextMeshProUGUI entryMapperTextComponent = entryMapper.Transform.GetComponent<CustomTextMeshProUGUI>();
         entryMapperTextComponent.textWrappingMode = TextWrappingModes.NoWrap;
         entryMapperTextComponent.overflowMode = TextOverflowModes.Ellipsis;
-        entryMapperTextComponent.fontSize = 24;
+        entryMapperTextComponent.fontSize = 22.5f;
         if (!IsCustom)
         {
             if (Enum.TryParse(NonCustomId!.Substring(0, 2), true, out DlcAbbreviations abbreviation))
@@ -606,8 +606,8 @@ public class QueueEntry
             
             CustomTextMeshProUGUI labelTextComponent = label.Transform.Find("IconContainer/ButtonText").GetComponent<CustomTextMeshProUGUI>();
             labelTextComponent.richText = true;
-            labelTextComponent.fontSizeMin = 24;
-            labelTextComponent.fontSizeMax = 24;
+            labelTextComponent.fontSizeMin = 22.5f;
+            labelTextComponent.fontSizeMax = 22.5f;
             labelTextComponent.fontStyle = FontStyles.Normal;
             
             TranslatedTextMeshPro translatedTextMeshPro = label.Transform.Find("IconContainer/ButtonText").GetComponent<TranslatedTextMeshPro>();
@@ -627,7 +627,7 @@ public class QueueEntry
             entryRequesterTextComponent.alignment = TextAlignmentOptions.Center;
             entryRequesterTextComponent.textWrappingMode = TextWrappingModes.NoWrap;
             entryRequesterTextComponent.overflowMode = TextOverflowModes.Ellipsis;
-            entryRequesterTextComponent.fontSize = 24;
+            entryRequesterTextComponent.fontSize = 22.5f;
             entryRequesterTextComponent.fontStyle = FontStyles.Italic;
             UpdateRequesterInformation();
         }
