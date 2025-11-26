@@ -83,6 +83,7 @@ All events follow the same data structure:
   "NonCustomId": <string (nullable)>,
   "IsCustom": <bool>,
   "Requester": <string>,
+  "RequestedAt": <integer (nullable)>
   "Service": <string>,
   "EasyRating": <integer (nullable)>,
   "NormalRating": <integer (nullable)>,

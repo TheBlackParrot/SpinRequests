@@ -39,6 +39,7 @@ public class QueueEntry
     public string? NonCustomId { get; set; }
     public bool IsCustom { get; set; }
     public string Requester { get; set; } = string.Empty;
+    public long? RequestedAt { get; set; }
     public string Service { get; set; } = string.Empty;
     public int? EasyRating { get; set; }
     public int? NormalRating { get; set; }
@@ -87,6 +88,7 @@ public class QueueEntry
     public bool HasPlayed => FileReference != null && Plugin.MapsThatCrossedPlayedThreshold.Contains(FileReference);
     public bool InQueue => FileReference != null && QueueList.Entries.Concat(QueueList.BufferedList).Any(x => x.FileReference == FileReference);
     [JsonIgnore] private CustomButton? _playButton;
+    [JsonIgnore] private CustomTextComponent? _entryRequester;
     // ReSharper restore UnusedAutoPropertyAccessor.Global
     // ReSharper restore MemberCanBePrivate.Global
     
@@ -119,6 +121,7 @@ public class QueueEntry
         Mapper = details.charter;
         SpinShareKey = details.id;
         FileReference = details.fileReference;
+        RequestedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         
         // just checking to see if details.xxxxDifficulty is null isn't enough, sometimes seems to just show 0 if not present on the API
         // so we check it with the bool also in the data lol
@@ -208,6 +211,7 @@ public class QueueEntry
         NonCustomId = $"{(DlcAbbreviations)metadata.trackOrder - (metadata.trackOrder % 1000)}{metadata.trackOrder % 1000}";
         FileReference = GetFileReference(metadataHandle);
         IsCustom = metadata.isCustom;
+        RequestedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
         TrackDataMetadata? easyInfo = metadataHandle.TrackDataMetadata.GetMetadataForDifficulty(TrackData.DifficultyType.Easy);
         EasyRating = easyInfo?.DifficultyRating;
@@ -582,6 +586,24 @@ public class QueueEntry
         }
         #endregion
         
+        #region requester
+        if (!string.IsNullOrEmpty(Requester))
+        {
+            CustomGroup requesterGroup = UIHelper.CreateGroup(entryGroup, "QueueEntryRequester");
+            VerticalLayoutGroup requesterLayoutGroupComponent = requesterGroup.Transform.GetComponent<VerticalLayoutGroup>();
+            requesterLayoutGroupComponent.spacing = 0;
+
+            _entryRequester = UIHelper.CreateLabel(requesterGroup, "QueueEntryRequester", TranslationReference.Empty);
+            CustomTextMeshProUGUI entryRequesterTextComponent = _entryRequester.Transform.GetComponent<CustomTextMeshProUGUI>();
+            entryRequesterTextComponent.alignment = TextAlignmentOptions.Center;
+            entryRequesterTextComponent.textWrappingMode = TextWrappingModes.NoWrap;
+            entryRequesterTextComponent.overflowMode = TextOverflowModes.Ellipsis;
+            entryRequesterTextComponent.fontSize = 24;
+            entryRequesterTextComponent.fontStyle = FontStyles.Italic;
+            UpdateRequesterInformation();
+        }
+        #endregion
+        
         #region buttons
         CustomGroup buttonGroup = UIHelper.CreateGroup(entryGroup, "QueueEntryButtons", Axis.Horizontal);
         
@@ -625,5 +647,23 @@ public class QueueEntry
 #else
         SocketApi.Broadcast("AddedToQueue", this);
 #endif
+    }
+
+    internal void UpdateRequesterInformation()
+    {
+        if (string.IsNullOrEmpty(Requester) || _entryRequester == null)
+        {
+            return;
+        }
+
+        long? mins = (DateTimeOffset.UtcNow.ToUnixTimeSeconds() - RequestedAt) / 60;
+        _entryRequester.ExtraText =
+            $"<alpha=#AA>requested by <alpha=#FF>{Requester} <alpha=#AA>{(mins switch
+            {
+                0 => "right now",
+                1 => "1 minute ago",
+                >= 120 => "a while ago", // ...i can do that??? cool
+                _ => $"{mins} minutes ago"
+            })}";
     }
 }

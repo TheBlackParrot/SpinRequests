@@ -7,11 +7,14 @@ using SpinCore.UI;
 using SpinRequests.Classes;
 using SpinRequests.Services;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.UI;
 
 namespace SpinRequests.UI;
 
 internal static class QueueList
 {
+    private static Button? _queueListButton;
     internal static CustomSidePanel? QueueListPanel;
     internal static CustomGroup? QueueListContainer;
     
@@ -37,14 +40,23 @@ internal static class QueueList
             
             QueueListPanel = UIHelper.CreateSidePanel(nameof(QueueListPanel), "SpinRequests_RequestQueueText", sprite);
             QueueListPanel.OnSidePanelLoaded += QueueListPanelOnSidePanelLoaded;
-            
-            CheckIndicatorDot();
         });
+    }
+
+    private static void UpdateAllRequesterInfoFields()
+    {
+        foreach (QueueEntry queueEntry in Entries)
+        {
+            queueEntry.UpdateRequesterInformation();
+        }
     }
 
     private static void QueueListPanelOnSidePanelLoaded(Transform panelTransform)
     {
         QueueListPanel!.OnSidePanelLoaded -= QueueListPanelOnSidePanelLoaded;
+        
+        _queueListButton = GameObject.Find("Dot Selector Button QueueListPanel").GetComponent<Button>();
+        _queueListButton.onClick.AddCall(new InvokableCall(UpdateAllRequesterInfoFields));
         
         CustomGroup queueListOptionsGroup = UIHelper.CreateGroup(panelTransform, "QueueListOptionsGroup");
         queueListOptionsGroup.LayoutDirection = Axis.Horizontal;
