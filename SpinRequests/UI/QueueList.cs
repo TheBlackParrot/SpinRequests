@@ -90,12 +90,19 @@ internal static class QueueList
         QueueEntry[]? entries = JsonConvert.DeserializeObject<QueueEntry[]>(File.ReadAllText(PersistentQueueFilename));
         if (entries == null)
         {
-            Plugin.Log.LogInfo("Persistent queue was empty");
+            Plugin.Log.LogInfo("Persistent queue was empty (null)");
             return;
         }
 
-        BufferedList.AddRange(entries);
-        Plugin.Log.LogInfo("Loaded persistent queue");
+        if (BufferedList.Count > 0)
+        {
+            BufferedList.AddRange(entries);
+            Plugin.Log.LogInfo("Loaded persistent queue");
+        }
+        else
+        {
+            Plugin.Log.LogInfo("Persistent queue was empty");
+        }
     }
 
     internal static void SavePersistentQueue() => File.WriteAllText(Path.Combine(Plugin.DataPath, "queue.json"),

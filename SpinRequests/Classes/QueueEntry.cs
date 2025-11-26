@@ -559,7 +559,7 @@ public class QueueEntry
             try
             {
                 await PlayButtonPressed();
-                Object.DestroyImmediate(entryGroup.GameObject);
+                Object.Destroy(entryGroup.GameObject);
             }
             catch (Exception e)
             {
@@ -572,7 +572,7 @@ public class QueueEntry
         UIHelper.CreateButton(buttonGroup, "SkipButton", "SpinRequests_SkipButtonText", () =>
         {
             SkipButtonPressed();
-            Object.DestroyImmediate(entryGroup.GameObject);
+            Object.Destroy(entryGroup.GameObject);
         });
         #endregion
         
