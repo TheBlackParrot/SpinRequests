@@ -21,6 +21,8 @@ namespace SpinRequests;
 [BepInDependency("srxd.raoul1808.spincore", "1.1.2")]
 public partial class Plugin : BaseUnityPlugin
 {
+    private const string TRANSLATION_PREFIX = $"{nameof(SpinRequests)}_";
+    
     internal static ManualLogSource Log = null!;
     private static readonly Harmony HarmonyInstance = new(MyPluginInfo.PLUGIN_GUID);
     
@@ -48,17 +50,17 @@ public partial class Plugin : BaseUnityPlugin
         SocketApi socketApi = new();
         socketApi.Initialize();
         
-        TranslationHelper.AddTranslation("SpinRequests_ModName", nameof(SpinRequests));
-        TranslationHelper.AddTranslation("SpinRequests_RequestQueueText", "Map Request Queue");
-        TranslationHelper.AddTranslation("SpinRequests_MenuButtonText", "Requests");
-        TranslationHelper.AddTranslation("SpinRequests_PlayButtonText", "Play");
-        TranslationHelper.AddTranslation("SpinRequests_DownloadButtonText", "Download");
-        TranslationHelper.AddTranslation("SpinRequests_DownloadingButtonText", "Downloading...");
-        TranslationHelper.AddTranslation("SpinRequests_SkipButtonText", "Skip");
-        TranslationHelper.AddTranslation("SpinRequests_AllowRequestsText", "Allow requests");
-        TranslationHelper.AddTranslation("SpinRequests_GitHubButtonText", "SpinRequests Releases (GitHub)");
-        TranslationHelper.AddTranslation("SpinRequests_ConsiderPlayedAfterThisPercentage", "Consider played after % of chart");
-        TranslationHelper.AddTranslation("SpinRequests_SessionPersistenceLength", "Hours to remember session history");
+        TranslationHelper.AddTranslation($"{TRANSLATION_PREFIX}ModName", nameof(SpinRequests));
+        
+        TranslationHelper.AddTranslation($"{TRANSLATION_PREFIX}RequestQueueText", "Map Request Queue");
+        TranslationHelper.AddTranslation($"{TRANSLATION_PREFIX}MenuButtonText", "Requests");
+        
+        TranslationHelper.AddTranslation($"{TRANSLATION_PREFIX}AllowRequestsText", "Allow requests");
+        
+        TranslationHelper.AddTranslation($"{TRANSLATION_PREFIX}PlayButtonText", "Play");
+        TranslationHelper.AddTranslation($"{TRANSLATION_PREFIX}DownloadButtonText", "Download");
+        TranslationHelper.AddTranslation($"{TRANSLATION_PREFIX}DownloadingButtonText", "Downloading...");
+        TranslationHelper.AddTranslation($"{TRANSLATION_PREFIX}SkipButtonText", "Skip");
 
         if (!Directory.Exists(DataPath))
         {
