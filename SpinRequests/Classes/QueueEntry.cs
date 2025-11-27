@@ -145,7 +145,7 @@ public class QueueEntry
             try
             {
                 Duration = Mathf.FloorToInt(XDSelectionListMenu.Instance._sortedTrackList
-                    .First(x => GetSafeReference(x.UniqueName) == FileReference)
+                    .First(x => !x.UniqueName.Contains("old_") && GetSafeReference(x.UniqueName) == FileReference)
                     .GetClosestTrackData(TrackData.DifficultyType.XD, IntRange.FromStartAndCount(0, 255)).Duration);
             }
             catch (Exception e)
