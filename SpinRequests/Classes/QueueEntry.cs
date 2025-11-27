@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SpinCore.UI;
@@ -518,8 +519,20 @@ public class QueueEntry
             {
                 await Awaitable.MainThreadAsync();
 
-                Texture2D texture = DownloadHandlerTexture.GetContent(request);
-                SetArt(texture);
+                Texture2D? texture = null;
+                try
+                {
+                    texture = DownloadHandlerTexture.GetContent(request);
+                }
+                catch (Exception e)
+                {
+                    if (e is not (InvalidOperationException or HttpRequestException))
+                    {
+                        throw;
+                    }
+                }
+                
+                SetArt(texture ?? GameSystemSingleton<TrackListSystem, TrackListSystemSettings>.Settings.fallbackAlbumArt);
             };
         }
 
