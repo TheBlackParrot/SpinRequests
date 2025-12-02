@@ -382,7 +382,7 @@ public class QueueEntry
                     }
                     
                     string reference = handle.UniqueName;
-                    if (reference.LastIndexOf('_') != -1)
+                    if (reference.LastIndexOf('_') != -1 && IsCustom)
                     {
                         reference = reference.Remove(handle.UniqueName.LastIndexOf('_'));
                     }
