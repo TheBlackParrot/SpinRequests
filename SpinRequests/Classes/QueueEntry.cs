@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using SpinCore.UI;
@@ -78,7 +79,16 @@ public class QueueEntry
                 return false;
             }
 
-            return UpdateDateTime == null || File.GetLastWriteTime(path) >= UpdateDateTime;
+            if (_updateHash == null)
+            {
+                // not a SpinShare entry
+                return true;
+            }
+
+            using MD5 md5 = MD5.Create();
+            using FileStream stream = File.OpenRead(path);
+            
+            return BitConverter.ToString(md5.ComputeHash(stream)).Replace("-", string.Empty).ToLowerInvariant() == _updateHash;
         }
     }
 
@@ -90,6 +100,7 @@ public class QueueEntry
     public bool InQueue => FileReference != null && QueueList.Entries.Concat(QueueList.BufferedList).Any(x => x.FileReference == FileReference);
     [JsonIgnore] private CustomButton? _playButton;
     [JsonIgnore] private CustomTextComponent? _entryRequester;
+    [JsonIgnore] private readonly string? _updateHash;
     // ReSharper restore UnusedAutoPropertyAccessor.Global
     // ReSharper restore MemberCanBePrivate.Global
     
@@ -115,6 +126,7 @@ public class QueueEntry
     public QueueEntry(SongDetail details, Dictionary<string, string>? query = null)
     {
         IsCustom = true;
+        _updateHash = details.updateHash.ToLowerInvariant();
         
         Title = details.title;
         Subtitle = details.subtitle;
