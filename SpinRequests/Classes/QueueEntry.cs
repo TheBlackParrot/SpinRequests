@@ -503,8 +503,10 @@ public class QueueEntry
         
         #region art
 
-        void SetArt(Texture2D texture)
+        void SetArt(Texture2D? texture)
         {
+            texture ??= GameSystemSingleton<TrackListSystem, TrackListSystemSettings>.Settings.fallbackAlbumArt;
+            
             CustomImage artImage = UIHelper.CreateImage(displayGroup, "QueueEntryArt", texture);
             artImage.Transform.SetSiblingIndex(0);
 
@@ -517,7 +519,7 @@ public class QueueEntry
         if (!IsCustom)
         {
             await Awaitable.MainThreadAsync();
-            SetArt(_handle!.albumArtRef.asset);
+            SetArt(_handle?.albumArtRef.asset);
         }
         else
         {
@@ -544,7 +546,7 @@ public class QueueEntry
                     }
                 }
                 
-                SetArt(texture ?? GameSystemSingleton<TrackListSystem, TrackListSystemSettings>.Settings.fallbackAlbumArt);
+                SetArt(texture);
             };
         }
 

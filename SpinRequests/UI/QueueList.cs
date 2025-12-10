@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -81,7 +82,14 @@ internal static class QueueList
         
         foreach (QueueEntry entry in BufferedList)
         {
-            await entry.AddToQueue(true);
+            try
+            {
+                await entry.AddToQueue(true);
+            }
+            catch (Exception e)
+            {
+                Plugin.Log.LogError(e);
+            }
         }
         
         BufferedList.Clear();
