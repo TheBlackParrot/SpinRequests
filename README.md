@@ -81,6 +81,7 @@ All events follow the same data structure:
   "Duration": <integer (nullable)>,
   "SpinShareKey": <integer (nullable)>,
   "NonCustomId": <string (nullable)>,
+  "Pack": <string (nullable)>,
   "IsCustom": <bool>,
   "Requester": <string>,
   "RequestedAt": <integer (nullable)>

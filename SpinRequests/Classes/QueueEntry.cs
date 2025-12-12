@@ -39,6 +39,8 @@ public class QueueEntry
     public int? Duration { get; set; }
     public int? SpinShareKey { get; set; }
     public string? NonCustomId { get; set; }
+    [JsonIgnore] private DlcAbbreviations PackIdentifier { get; set; } = DlcAbbreviations.BG;
+    public string? Pack => NonCustomId == "BG0" ? null : _dlcNames[PackIdentifier];
     public bool IsCustom { get; set; }
     public string Requester { get; set; } = string.Empty;
     public long? RequestedAt { get; set; }
@@ -221,7 +223,8 @@ public class QueueEntry
         Artist = $"{metadata.artistName}{(string.IsNullOrEmpty(metadata.featArtists) ? "" : $" {metadata.featArtists}")}";
         Mapper = metadata.charter;
         Duration = Mathf.FloorToInt(metadataHandle.GetClosestTrackData(TrackData.DifficultyType.XD, IntRange.FromStartAndCount(0, 255)).Duration);
-        NonCustomId = $"{(DlcAbbreviations)metadata.trackOrder - (metadata.trackOrder % 1000)}{metadata.trackOrder % 1000}";
+        PackIdentifier = (DlcAbbreviations)metadata.trackOrder - (metadata.trackOrder % 1000);
+        NonCustomId = $"{PackIdentifier}{metadata.trackOrder % 1000}";
         FileReference = GetFileReference(metadataHandle);
         IsCustom = metadata.isCustom;
         RequestedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -253,7 +256,8 @@ public class QueueEntry
         Artist = $"{metadata.artistName}{(string.IsNullOrEmpty(metadata.featArtists) ? "" : $" {metadata.featArtists}")}";
         Mapper = metadata.isCustom ? metadata.charter : trackData.Difficulty == TrackData.DifficultyType.RemiXD ? metadata.charter : null;
         Duration = Mathf.FloorToInt(trackData.Setup.TrackDataSegmentForSingleTrackDataSetup.GetTrackDataMetadata().Duration);
-        NonCustomId = $"{(DlcAbbreviations)metadata.trackOrder - (metadata.trackOrder % 1000)}{metadata.trackOrder % 1000}";
+        PackIdentifier = (DlcAbbreviations)metadata.trackOrder - (metadata.trackOrder % 1000);
+        NonCustomId = $"{PackIdentifier}{metadata.trackOrder % 1000}";
         FileReference = GetFileReference(metadataHandle);
         IsCustom = metadata.isCustom;
         
