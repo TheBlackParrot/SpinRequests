@@ -251,7 +251,7 @@ public class QueueEntry
         Title = metadata.title;
         Subtitle = metadata.subtitle;
         Artist = $"{metadata.artistName}{(string.IsNullOrEmpty(metadata.featArtists) ? "" : $" {metadata.featArtists}")}";
-        Mapper = trackData.Difficulty is TrackData.DifficultyType.RemiXD ? metadata.charter : null;
+        Mapper = metadata.isCustom ? metadata.charter : (trackData.Difficulty is TrackData.DifficultyType.RemiXD ? metadata.charter : null);
         Duration = Mathf.FloorToInt(trackData.Setup.TrackDataSegmentForSingleTrackDataSetup.GetTrackDataMetadata().Duration);
         NonCustomId = $"{(DlcAbbreviations)metadata.trackOrder - (metadata.trackOrder % 1000)}{metadata.trackOrder % 1000}";
         FileReference = GetFileReference(metadataHandle);
