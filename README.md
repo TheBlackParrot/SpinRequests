@@ -77,7 +77,7 @@ All events follow the same data structure:
   "Title": <string>,
   "Subtitle": <string>,
   "Artist": <string>,
-  "Mapper": <string>,
+  "Mapper": <string> (nullable),
   "Duration": <integer (nullable)>,
   "SpinShareKey": <integer (nullable)>,
   "NonCustomId": <string (nullable)>,

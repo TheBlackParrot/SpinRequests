@@ -35,7 +35,7 @@ public class QueueEntry
     public string Subtitle { get; set; } = string.Empty;
     [JsonIgnore] private string TitleFormatted => $"<b>{Title}</b>{(string.IsNullOrEmpty(Subtitle) ? "" : " <size=75%><alpha=#AA>" + Subtitle)}";
     public string Artist { get; set; } = string.Empty;
-    public string Mapper { get; set; } = string.Empty;
+    public string? Mapper { get; set; }
     public int? Duration { get; set; }
     public int? SpinShareKey { get; set; }
     public string? NonCustomId { get; set; }
@@ -251,7 +251,7 @@ public class QueueEntry
         Title = metadata.title;
         Subtitle = metadata.subtitle;
         Artist = $"{metadata.artistName}{(string.IsNullOrEmpty(metadata.featArtists) ? "" : $" {metadata.featArtists}")}";
-        Mapper = metadata.charter;
+        Mapper = trackData.Difficulty is TrackData.DifficultyType.RemiXD ? metadata.charter : null;
         Duration = Mathf.FloorToInt(trackData.Setup.TrackDataSegmentForSingleTrackDataSetup.GetTrackDataMetadata().Duration);
         NonCustomId = $"{(DlcAbbreviations)metadata.trackOrder - (metadata.trackOrder % 1000)}{metadata.trackOrder % 1000}";
         FileReference = GetFileReference(metadataHandle);
