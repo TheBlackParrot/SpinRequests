@@ -40,7 +40,7 @@ public class QueueEntry
     public int? SpinShareKey { get; set; }
     public string? NonCustomId { get; set; }
     [JsonIgnore] private DlcAbbreviations PackIdentifier { get; set; } = DlcAbbreviations.BG;
-    public string? Pack => NonCustomId == "BG0" ? null : _dlcNames[PackIdentifier];
+    public string? Pack => NonCustomId is "BG0" or null ? null : _dlcNames[PackIdentifier];
     public bool IsCustom { get; set; }
     public string Requester { get; set; } = string.Empty;
     public long? RequestedAt { get; set; }
