@@ -351,7 +351,7 @@ public class QueueEntry
                 else
                 {
                     File.Move(srtbFilename,
-                        Path.Combine(Plugin.CustomsPath, $"{FileReference}old_{unixTimestamp}.srtb"));
+                        Path.Combine(Plugin.CustomsPath, $"{FileReference}old_{unixTimestamp}.{(Plugin.HideOldMapFiles.Value ? "srtb_old" : "srtb")}"));
                 }
             }
             if (File.Exists(artFilename))

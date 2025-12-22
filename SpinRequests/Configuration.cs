@@ -16,6 +16,7 @@ public partial class Plugin
     
     internal static ConfigEntry<bool> EnableQueueNotifications = null!;
     internal static ConfigEntry<bool> DeleteOldMapFiles = null!;
+    internal static ConfigEntry<bool> HideOldMapFiles = null!;
     internal static ConfigEntry<bool> JumpToMapAfterDownloading = null!;
     private static ConfigEntry<int> _considerPlayedAfterThisPercentage = null!;
     private static ConfigEntry<int> _sessionPersistenceLength = null!;
@@ -38,6 +39,8 @@ public partial class Plugin
             "Show notifications for maps added to the queue");
         DeleteOldMapFiles = Config.Bind("General", nameof(DeleteOldMapFiles), false,
             "Delete old map files when downloading updated maps");
+        HideOldMapFiles = Config.Bind("General", nameof(HideOldMapFiles), false,
+            "Hide old map files when downloading updated maps and keeping the old map data");
         JumpToMapAfterDownloading = Config.Bind("General", nameof(JumpToMapAfterDownloading), true,
             "Automatically jump to the downloaded map in the map list once downloading finishes");
         _considerPlayedAfterThisPercentage = Config.Bind("General", "ConsiderPlayedAfterThisPercentage", 0,
@@ -55,6 +58,7 @@ public partial class Plugin
         
         TranslationHelper.AddTranslation($"{TRANSLATION_PREFIX}{nameof(EnableQueueNotifications)}", "Enable queue notifications");
         TranslationHelper.AddTranslation($"{TRANSLATION_PREFIX}{nameof(DeleteOldMapFiles)}", "Delete old map files when downloading updated maps");
+        TranslationHelper.AddTranslation($"{TRANSLATION_PREFIX}{nameof(HideOldMapFiles)}", "Hide old map files");
         TranslationHelper.AddTranslation($"{TRANSLATION_PREFIX}{nameof(JumpToMapAfterDownloading)}", "Jump to downloaded maps once download finishes");
         TranslationHelper.AddTranslation($"{TRANSLATION_PREFIX}{nameof(_considerPlayedAfterThisPercentage)}", "Consider played after % of chart");
         TranslationHelper.AddTranslation($"{TRANSLATION_PREFIX}{nameof(_sessionPersistenceLength)}", "Hours to remember session history");
@@ -83,6 +87,16 @@ public partial class Plugin
             $"{TRANSLATION_PREFIX}{nameof(DeleteOldMapFiles)}", DeleteOldMapFiles.Value, value =>
             {
                 DeleteOldMapFiles.Value = value;
+            });
+        #endregion
+        
+        #region HideOldMapFiles
+        CustomGroup hideOldMapFilesGroup = UIHelper.CreateGroup(modGroup, "HideOldMapFilesGroup");
+        hideOldMapFilesGroup.LayoutDirection = Axis.Horizontal;
+        UIHelper.CreateSmallToggle(hideOldMapFilesGroup, nameof(HideOldMapFiles),
+            $"{TRANSLATION_PREFIX}{nameof(HideOldMapFiles)}", HideOldMapFiles.Value, value =>
+            {
+                HideOldMapFiles.Value = value;
             });
         #endregion
         
