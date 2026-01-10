@@ -72,13 +72,17 @@ internal static class QueueList
 
         QueueListContainer = UIHelper.CreateGroup(panelTransform, "QueueListContainer");
         CheckIndicatorDot();
-        _ = LoadBufferedQueue();
+        
+        Task.Run(async () =>
+        {
+            await LoadPersistentQueue();
+            await LoadBufferedQueue();
+        });
     }
 
     internal static async Task LoadBufferedQueue(bool silent = true)
     {
         await Awaitable.MainThreadAsync();
-        await LoadPersistentQueue();
         
         foreach (QueueEntry entry in BufferedList)
         {
