@@ -79,6 +79,8 @@ public partial class Plugin : BaseUnityPlugin
         MainCamera.OnCurrentCameraChanged += MainCameraOnCurrentCameraChanged;
         
         HarmonyInstance.PatchAll();
+
+        TrackTimeTracking.TimerTask = TrackTimeTracking.RunTimer();
     }
 
     private static void MainCameraOnCurrentCameraChanged(Camera _)
@@ -144,8 +146,8 @@ public partial class Plugin : BaseUnityPlugin
 
     private static void TrackOnStartedPlayingTrack(PlayableTrackDataHandle dataHandle, PlayState[] _)
     {
-        TrackTimePatches.HasSetPlayed = false;
-        TrackTimePatches.NeededTrackTime = dataHandle.Data.SoundEndTime * (_considerPlayedAfterThisPercentage.Value / 100f);
+        TrackTimeTracking.HasSetPlayed = false;
+        TrackTimeTracking.NeededTrackTime = dataHandle.Data.SoundEndTime * (_considerPlayedAfterThisPercentage.Value / 100f);
         
         AddToPlayedMapHistory(dataHandle);
     }
