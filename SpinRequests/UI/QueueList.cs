@@ -75,8 +75,15 @@ internal static class QueueList
         
         Task.Run(async () =>
         {
-            await LoadPersistentQueue();
-            await LoadBufferedQueue();
+            try
+            {
+                await LoadPersistentQueue();
+                await LoadBufferedQueue();
+            }
+            catch (Exception e)
+            {
+                Plugin.Log.LogError(e);
+            }
         });
     }
 
@@ -84,19 +91,22 @@ internal static class QueueList
     {
         await Awaitable.MainThreadAsync();
         
-        foreach (QueueEntry entry in BufferedList)
+        // we need a copy of the buffered list, since we can't modify it while enumerating over it
+        foreach (QueueEntry entry in BufferedList.ToList())
         {
             try
             {
-                await entry.AddToQueue(silent);
+                Plugin.Log.LogInfo($"Loading buffered queue entry {entry.SpinShareKey?.ToString() ?? entry.NonCustomId}");
+                if (await entry.AddToQueue(silent))
+                {
+                    BufferedList.Remove(entry);
+                }
             }
             catch (Exception e)
             {
                 Plugin.Log.LogError(e);
             }
         }
-        
-        BufferedList.Clear();
     }
 
     private static async Task LoadPersistentQueue()

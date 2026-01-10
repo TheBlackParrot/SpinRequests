@@ -481,21 +481,20 @@ public class QueueEntry
         SocketApi.Broadcast("Skipped", this);
     }
 
-    public async Task AddToQueue(bool silent = false)
+    public async Task<bool> AddToQueue(bool silent = false)
     {
         // ReSharper disable once ConstantConditionalAccessQualifier
-        if (QueueList.QueueListContainer == null || ((PlayState.Active?.HasStartedPlaying ?? false) && (!PlayState.Active?.Completed ?? false)))
+        if (QueueList.QueueListContainer == null || ((PlayState.Active?.HasStartedPlaying ?? false) && (!PlayState.Active?.Completed ?? false) && PlayState.Active.IsMusicPlaying()))
         {
             if (QueueList.BufferedList.Contains(this))
             {
                 Plugin.Log.LogInfo($"{SpinShareKey?.ToString() ?? NonCustomId} is already in the buffer queue");
-                return;
+                return false;
             }
             
             Plugin.Log.LogInfo($"Adding {SpinShareKey?.ToString() ?? NonCustomId} to the buffer queue");
             QueueList.BufferedList.Add(this);
-            QueueList.CheckIndicatorDot();
-            return;
+            return false;
         }
         
         // a bunch of UI functions happen here and Unity gets Very Very Angry if we're not on the main thread
@@ -717,6 +716,7 @@ public class QueueEntry
 #else
         SocketApi.Broadcast("AddedToQueue", this);
 #endif
+        return true;
     }
 
     internal void UpdateRequesterInformation()
