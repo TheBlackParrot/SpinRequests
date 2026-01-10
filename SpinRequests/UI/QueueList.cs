@@ -75,7 +75,7 @@ internal static class QueueList
         _ = LoadBufferedQueue();
     }
 
-    private static async Task LoadBufferedQueue()
+    private static async Task LoadBufferedQueue(bool silent = true)
     {
         await Awaitable.MainThreadAsync();
         await LoadPersistentQueue();
@@ -84,7 +84,7 @@ internal static class QueueList
         {
             try
             {
-                await entry.AddToQueue(true);
+                await entry.AddToQueue(silent);
             }
             catch (Exception e)
             {

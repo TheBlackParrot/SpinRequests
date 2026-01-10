@@ -483,6 +483,21 @@ public class QueueEntry
 
     public async Task AddToQueue(bool silent = false)
     {
+        // ReSharper disable once ConstantConditionalAccessQualifier
+        if (QueueList.QueueListContainer == null || ((PlayState.Active?.HasStartedPlaying ?? false) && (!PlayState.Active?.Completed ?? false)))
+        {
+            if (QueueList.BufferedList.Contains(this))
+            {
+                Plugin.Log.LogInfo($"{SpinShareKey?.ToString() ?? NonCustomId} is already in the buffer queue");
+                return;
+            }
+            
+            Plugin.Log.LogInfo($"Adding {SpinShareKey?.ToString() ?? NonCustomId} to the buffer queue");
+            QueueList.BufferedList.Add(this);
+            QueueList.CheckIndicatorDot();
+            return;
+        }
+        
         // a bunch of UI functions happen here and Unity gets Very Very Angry if we're not on the main thread
         await Awaitable.MainThreadAsync();
 
@@ -490,13 +505,6 @@ public class QueueEntry
         {
             NotificationSystemGUI.AddMessage(
                 $"<b>{Requester}</b> added <i>{Title}</i> <alpha=#AA>({SpinShareKey?.ToString() ?? NonCustomId})<alpha=#FF> to the queue!", 7f);
-        }
-
-        if (QueueList.QueueListContainer == null)
-        {
-            QueueList.BufferedList.Add(this);
-            QueueList.CheckIndicatorDot();
-            return;
         }
         
         CustomGroup entryGroup = UIHelper.CreateGroup(QueueList.QueueListContainer, "QueueEntry");
