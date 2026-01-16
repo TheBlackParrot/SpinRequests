@@ -3,6 +3,8 @@ An in-game map request manager for Spin Rhythm XD that abstracts out functions t
 
 Any streaming bot you use (e.g. Streamer.bot, Firebot, MixItUp, etc.) now has request queue functionality -- so long as it supports making HTTP requests (at the minimum).
 
+> [SpinRequestsTwitchBridge](https://github.com/TheBlackParrot/SpinRequestsTwitchBridge) can also be used if you do not wish to use an external bot and stream on Twitch, but it only supports adding charts to the queue and cannot respond to actions in chat.
+
 ![Screenshot of SpinRequests being used in-game](Assets/screenshot.png)
 
 ## Dependencies
