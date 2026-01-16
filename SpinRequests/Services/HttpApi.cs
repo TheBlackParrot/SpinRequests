@@ -91,7 +91,7 @@ internal class HttpApi
         });
     }
     
-    private static async Task<KeyValuePair<int, byte[]>> HandleQueryAddContext(string[] path,
+    internal static async Task<KeyValuePair<int, byte[]>> HandleQueryAddContext(string[] path,
         bool addToQueue = false,
         Dictionary<string, string>? query = null)
     {
@@ -378,5 +378,20 @@ internal class HttpApi
         
         outputStream.Close();
         context.Response.Close();
+    }
+}
+
+public abstract class HttpApiPublic
+{
+    public static async Task AddRequest(string path, string? user = null)
+    {
+        if (user == null)
+        {
+            await HttpApi.HandleQueryAddContext(path.Split('/'), true);
+        }
+        else
+        {
+            await HttpApi.HandleQueryAddContext(path.Split('/'), true, new Dictionary<string, string>() { { "user", user } });
+        }
     }
 }
